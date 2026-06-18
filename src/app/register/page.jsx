@@ -11,11 +11,72 @@ import {
   EyeOff,
   ChefHat,
 } from "lucide-react";
-import { useState } from "react";
 import { FcGoogle } from "react-icons/fc";
+import { useState } from "react";
+import { authClient } from "@/lib/auth-client";
+import { reddit } from "better-auth";
+
+// import your auth client
+// import { authClient } from "@/lib/auth-client";
 
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
+
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    image: "",
+    password: "",
+  });
+
+  const [loading, setLoading] = useState(false);
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleRegister = async (e) => {
+    e.preventDefault();
+
+    try {
+      setLoading(true);
+
+      const { error } = await authClient.signUp.email({
+        email: formData.email,
+        password: formData.password,
+        name: formData.name,
+        image: formData.image,
+        role: "user", 
+        isBlocked: false,
+        isPremium: false,
+        redirectTo: "/",
+      });
+
+      if (error) {
+        alert(error.message);
+        return;
+      }
+
+      alert("Account created successfully!");
+      redirect("/");
+    } catch (err) {
+      console.log(err);
+      alert("Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    // await authClient.signIn.social({
+    //   provider: "google",
+    //   callbackURL: "/",
+  // });
+  console.log('goole signin')
+  };
 
   return (
     <section className="min-h-screen bg-white dark:bg-slate-950 transition-colors duration-300">
@@ -53,6 +114,7 @@ export default function RegisterPage() {
           {/* Form Side */}
           <div>
             <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl p-8 md:p-10">
+              
               <div className="text-center mb-8">
                 <h2 className="text-3xl font-bold text-slate-900 dark:text-white">
                   Create Account
@@ -63,7 +125,10 @@ export default function RegisterPage() {
                 </p>
               </div>
 
-              <form className="space-y-5">
+              <form
+                onSubmit={handleRegister}
+                className="space-y-5"
+              >
                 {/* Name */}
                 <div>
                   <label className="block mb-2 text-sm font-medium">
@@ -77,7 +142,11 @@ export default function RegisterPage() {
                     />
 
                     <input
+                      name="name"
                       type="text"
+                      required
+                      value={formData.name}
+                      onChange={handleChange}
                       placeholder="Enter your name"
                       className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-orange-500"
                     />
@@ -97,14 +166,18 @@ export default function RegisterPage() {
                     />
 
                     <input
+                      name="email"
                       type="email"
+                      required
+                      value={formData.email}
+                      onChange={handleChange}
                       placeholder="Enter your email"
                       className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-orange-500"
                     />
                   </div>
                 </div>
 
-                {/* Image URL */}
+                {/* Image */}
                 <div>
                   <label className="block mb-2 text-sm font-medium">
                     Image URL
@@ -117,7 +190,10 @@ export default function RegisterPage() {
                     />
 
                     <input
+                      name="image"
                       type="text"
+                      value={formData.image}
+                      onChange={handleChange}
                       placeholder="Profile image URL"
                       className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-orange-500"
                     />
@@ -137,14 +213,20 @@ export default function RegisterPage() {
                     />
 
                     <input
+                      name="password"
                       type={showPassword ? "text" : "password"}
+                      required
+                      value={formData.password}
+                      onChange={handleChange}
                       placeholder="Enter password"
                       className="w-full pl-10 pr-12 py-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-orange-500"
                     />
 
                     <button
                       type="button"
-                      onClick={() => setShowPassword(!showPassword)}
+                      onClick={() =>
+                        setShowPassword(!showPassword)
+                      }
                       className="absolute right-3 top-1/2 -translate-y-1/2"
                     >
                       {showPassword ? (
@@ -154,32 +236,34 @@ export default function RegisterPage() {
                       )}
                     </button>
                   </div>
-
-                  <p className="text-xs text-slate-500 mt-2">
-                    Password must contain at least 6 characters,
-                    one uppercase letter and one lowercase letter.
-                  </p>
                 </div>
 
-                {/* Register */}
+                {/* Register Button */}
                 <Button
+                  type="submit"
                   color="warning"
                   size="lg"
+                  isDisabled={loading}
                   className="w-full font-semibold"
                 >
-                  Create Account
+                  {loading
+                    ? "Creating Account..."
+                    : "Create Account"}
                 </Button>
 
-                {/* Google */}
+                {/* Google Login */}
                 <Button
+                  type="button"
                   variant="bordered"
                   size="lg"
                   className="w-full"
+                  onPress={handleGoogleLogin}
                 >
-                  <FcGoogle />
+                  <FcGoogle size={22} />
                   Continue with Google
                 </Button>
 
+                {/* Login Link */}
                 <p className="text-center text-sm text-slate-500 dark:text-slate-400">
                   Already have an account?{" "}
                   <Link
@@ -190,6 +274,7 @@ export default function RegisterPage() {
                   </Link>
                 </p>
               </form>
+
             </div>
           </div>
         </div>

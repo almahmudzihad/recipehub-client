@@ -5,8 +5,15 @@ import { Button } from "@heroui/react";
 import { Menu, X, Sun, Moon } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
+import { useRouter } from "next/navigation";
+import { authClient, useSession } from "@/lib/auth-client";
 
 export default function Navbar() {
+  const router = useRouter();
+
+  const { data: session } = useSession();
+  const user = session?.user;
+
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
@@ -16,34 +23,26 @@ export default function Navbar() {
     setMounted(true);
   }, []);
 
-  // Prevent hydration mismatch
+  const handleSignOut = async () => {
+    try {
+      await authClient.signOut();
+
+      router.push("/");
+      router.refresh();
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   if (!mounted) {
-    return (
-      <nav className="sticky top-0 z-50 border-b bg-white dark:bg-slate-950">
-        <div className="max-w-7xl mx-auto px-5 h-16 flex items-center">
-          <Link
-            href="/"
-            className="text-2xl font-bold text-orange-500"
-          >
-            🍽️ RecipeHub
-          </Link>
-        </div>
-      </nav>
-    );
+    return null;
   }
 
   return (
-    <nav
-      className="
-        sticky top-0 z-50
-        border-b border-slate-200 dark:border-slate-800
-        bg-white/80 dark:bg-slate-950/80
-        backdrop-blur-md
-        transition-all
-      "
-    >
+    <nav className="sticky top-0 z-50 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md">
       <div className="max-w-7xl mx-auto px-5">
         <div className="flex items-center justify-between h-16">
+          
           {/* Logo */}
           <Link
             href="/"
@@ -56,26 +55,41 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-8">
             <Link
               href="/"
-              className="text-slate-700 dark:text-slate-300 hover:text-orange-500 transition"
+              className="hover:text-orange-500 transition"
             >
               Home
             </Link>
 
             <Link
               href="/recipes"
-              className="text-slate-700 dark:text-slate-300 hover:text-orange-500 transition"
+              className="hover:text-orange-500 transition"
             >
-              Browse Recipes
+              All Recipes
             </Link>
+
+            {user && (
+              <Link
+                href="/dashboard"
+                className="hover:text-orange-500 transition"
+              >
+                Dashboard
+              </Link>
+            )}
           </div>
 
-          {/* Desktop Right */}
+          {/* Right Side */}
           <div className="hidden md:flex items-center gap-3">
+
+            {/* Theme */}
             <Button
               isIconOnly
               variant="light"
               onPress={() =>
-                setTheme(theme === "dark" ? "light" : "dark")
+                setTheme(
+                  theme === "dark"
+                    ? "light"
+                    : "dark"
+                )
               }
             >
               {theme === "dark" ? (
@@ -85,17 +99,57 @@ export default function Navbar() {
               )}
             </Button>
 
-            <Link href="/login">
-              <Button variant="light">
-                Login
-              </Button>
-            </Link>
+            {user ? (
+              <>
+                {/* User Image */}
+                <img
+                  src={
+                    user.image ||
+                    "https://i.ibb.co/4pDNDk1/avatar.png"
+                  }
+                  alt={user.name}
+                  className="w-10 h-10 rounded-full border object-cover"
+                />
 
-            <Link href="/register">
-              <Button color="warning">
-                Register
-              </Button>
-            </Link>
+                {/* User Name */}
+                <span className="font-medium">
+                  {user.name}
+                </span>
+
+                {/* Dashboard */}
+                <Link href="/dashboard">
+                  <Button
+                    color="warning"
+                    variant="flat"
+                  >
+                    Dashboard
+                  </Button>
+                </Link>
+
+                {/* Logout */}
+                <Button
+                  color="danger"
+                  variant="flat"
+                  onPress={handleSignOut}
+                >
+                  Logout
+                </Button>
+              </>
+            ) : (
+              <>
+                <Link href="/login">
+                  <Button variant="light">
+                    Login
+                  </Button>
+                </Link>
+
+                <Link href="/register">
+                  <Button color="warning">
+                    Register
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile Toggle */}
@@ -103,45 +157,70 @@ export default function Navbar() {
             onClick={() => setOpen(!open)}
             className="md:hidden"
           >
-            {open ? <X size={24} /> : <Menu size={24} />}
+            {open ? <X /> : <Menu />}
           </button>
         </div>
 
         {/* Mobile Menu */}
         {open && (
           <div className="md:hidden py-4 flex flex-col gap-4 border-t border-slate-200 dark:border-slate-800">
-            <Link
-              href="/"
-              className="text-slate-700 dark:text-slate-300"
-            >
+
+            <Link href="/">
               Home
             </Link>
 
-            <Link
-              href="/recipes"
-              className="text-slate-700 dark:text-slate-300"
-            >
-              Browse Recipes
+            <Link href="/recipes">
+              All Recipes
             </Link>
 
-            <Link
-              href="/login"
-              className="text-slate-700 dark:text-slate-300"
-            >
-              Login
-            </Link>
+            {user ? (
+              <>
+                <div className="flex items-center gap-3">
+                  <img
+                    src={
+                      user.image ||
+                      "https://i.ibb.co/4pDNDk1/avatar.png"
+                    }
+                    alt={user.name}
+                    className="w-10 h-10 rounded-full border"
+                  />
 
-            <Link
-              href="/register"
-              className="text-slate-700 dark:text-slate-300"
-            >
-              Register
-            </Link>
+                  <span>
+                    {user.name}
+                  </span>
+                </div>
+
+                <Link href="/dashboard">
+                  Dashboard
+                </Link>
+
+                <Button
+                  color="danger"
+                  onPress={handleSignOut}
+                >
+                  Logout
+                </Button>
+              </>
+            ) : (
+              <>
+                <Link href="/login">
+                  Login
+                </Link>
+
+                <Link href="/register">
+                  Register
+                </Link>
+              </>
+            )}
 
             <Button
               variant="flat"
               onPress={() =>
-                setTheme(theme === "dark" ? "light" : "dark")
+                setTheme(
+                  theme === "dark"
+                    ? "light"
+                    : "dark"
+                )
               }
             >
               {theme === "dark"
