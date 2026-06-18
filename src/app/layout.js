@@ -1,9 +1,10 @@
 import { Outfit } from "next/font/google";
 import "./globals.css";
 
-import Navbar from "./components/shared/Navbar";
-import Footer from "./components/shared/Footer";
+
 import ThemeProvider from "./providers/ThemeProvider";
+import Navbar from "@/components/shared/Navbar";
+import Footer from "@/components/shared/Footer";
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -20,10 +21,11 @@ export default function RootLayout({ children }) {
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={`${outfit.variable} antialiased`}
     >
       <body 
-      suppressHydrationWarning
+      
       className="font-sans min-h-screen flex flex-col">
         <ThemeProvider>
           <Navbar />

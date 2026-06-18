@@ -1,11 +1,14 @@
+import FeaturedRecipes from "@/components/homepage/FeaturedRecipes";
+import Hero from "@/components/homepage/Hero";
+import TopChefs from "@/components/homepage/TopChefs";
 import Image from "next/image";
-import Hero from "./components/homepage/Hero";
 
 export default function Home() {
   return (
     <div>
       <Hero />
-      
+      <FeaturedRecipes />
+      <TopChefs />
     </div>
   );
 }
