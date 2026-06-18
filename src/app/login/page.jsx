@@ -11,8 +11,20 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { FcGoogle } from "react-icons/fc";
+import { authClient } from "@/lib/auth-client";
 
 export default function LoginPage() {
+  const handleSignin = async (e) => {
+        e.preventDefault();
+        
+    const formData = new FormData(e.currentTarget);
+    const user = Object.fromEntries(formData.entries());
+
+    await authClient.signIn.email({
+      ...user,
+      callbackURL: "/",
+    });
+  };
   const [showPassword, setShowPassword] = useState(false);
 
   return (
@@ -61,7 +73,7 @@ export default function LoginPage() {
                 </p>
               </div>
 
-              <form className="space-y-5">
+              <form className="space-y-5" onSubmit={handleSignin}>
                 {/* Email */}
                 <div>
                   <label className="block mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
@@ -75,6 +87,7 @@ export default function LoginPage() {
                     />
 
                     <input
+                      name="email"
                       type="email"
                       placeholder="Enter your email"
                       className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
@@ -95,6 +108,7 @@ export default function LoginPage() {
                     />
 
                     <input
+                      name="password"
                       type={showPassword ? "text" : "password"}
                       placeholder="Enter your password"
                       className="w-full pl-10 pr-12 py-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
@@ -126,6 +140,7 @@ export default function LoginPage() {
 
                 {/* Login Button */}
                 <Button
+                  type="submit"
                   color="warning"
                   size="lg"
                   className="w-full font-semibold"

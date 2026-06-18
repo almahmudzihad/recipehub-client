@@ -116,15 +116,7 @@ export default function Navbar() {
                   {user.name}
                 </span>
 
-                {/* Dashboard */}
-                <Link href="/dashboard">
-                  <Button
-                    color="warning"
-                    variant="flat"
-                  >
-                    Dashboard
-                  </Button>
-                </Link>
+                
 
                 {/* Logout */}
                 <Button
@@ -175,6 +167,9 @@ export default function Navbar() {
 
             {user ? (
               <>
+              <Link href="/dashboard">
+                  Dashboard
+                </Link>
                 <div className="flex items-center gap-3">
                   <img
                     src={
@@ -190,9 +185,7 @@ export default function Navbar() {
                   </span>
                 </div>
 
-                <Link href="/dashboard">
-                  Dashboard
-                </Link>
+                
 
                 <Button
                   color="danger"
