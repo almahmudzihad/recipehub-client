@@ -27,3 +27,22 @@ export const createRecipe = async (newRecipeData) => {
         return { success: false, error: "Network or server configuration error." };
     }
 };
+
+export const fetchAllRecipes = async () => {
+    try {
+        const res = await fetch(`${baseUrl}/api/recipes`);
+        return await res.json();
+    } catch (error) {
+        console.error("Fetch request failed completely:", error);
+        return { success: false, error: "Network or server configuration error." };
+    }
+};
+export const fetchRecipeDetails = async (id) => {
+    try {
+        const res = await fetch(`${baseUrl}/api/recipes/${id}`);
+        return await res.json();
+    } catch (error) {
+        console.error("Fetch request failed completely:", error);
+        return { success: false, error: "Network or server configuration error." };
+    }
+};
