@@ -1,17 +1,12 @@
-"use client";
+
 
 import RecipeCard from "@/components/RecipeCard";
-import { useEffect, useState } from "react";
+import { fetchAllRecipes } from "@/lib/action/recipe";
 
 
-export default function RecipesPage() {
-  const [recipes, setRecipes] = useState([]);
 
-  useEffect(() => {
-    fetch("http://localhost:5000/api/recipes")
-      .then((res) => res.json())
-      .then((data) => setRecipes(data));
-  }, []);
+export default async function RecipesPage() {
+  const recipes = await fetchAllRecipes();
 
   return (
     <section className="max-w-7xl mx-auto px-5 py-12">

@@ -11,7 +11,7 @@ export async function DashboardSidebar() {
     
 
     const userNavLinks = [
-        { icon: Person, href: "/dashboard/user/profile", label: "Profile" },
+        { icon: Person, href: "/dashboard/user", label: "Overview" },
         { icon: Magnifier, href: "/dashboard/recruiter/jobs", label: "My Post " },
         { icon: Bell, href: "/dashboard/user/new", label: "Post A Recepe" },
         

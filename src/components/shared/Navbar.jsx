@@ -13,6 +13,7 @@ export default function Navbar() {
 
   const { data: session } = useSession();
   const user = session?.user;
+  console.log("user form navbar", user?.role);
 
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -69,7 +70,7 @@ export default function Navbar() {
 
             {user && (
               <Link
-                href="/dashboard"
+                href={`${user.role === "user" ? "/dashboard/user" : "/dashboard/admin"}`}
                 className="hover:text-orange-500 transition"
               >
                 Dashboard
