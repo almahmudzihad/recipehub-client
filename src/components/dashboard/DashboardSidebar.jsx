@@ -1,6 +1,8 @@
 
 import { getUserSession } from "@/lib/api/session";
-import { LayoutSideContentLeft, Bell, Briefcase, Envelope, Gear, House, Magnifier, Person, Bookmark, FileText, CreditCard } from "@gravity-ui/icons";
+import { LayoutSideContentLeft, Bell, Briefcase, Envelope, Gear, House, Magnifier, Person, Bookmark, FileText, CreditCard, Receipt,  LayoutCells, BookOpen, CirclePlus,
+  Heart,
+   } from "@gravity-ui/icons";
 import { Button, Drawer } from "@heroui/react";
 import { Building, Users } from "lucide-react";
 import Link from "next/link";
@@ -11,11 +13,13 @@ export async function DashboardSidebar() {
     
 
     const userNavLinks = [
-        { icon: Person, href: "/dashboard/user", label: "Overview" },
-        { icon: Magnifier, href: "/dashboard/recruiter/jobs", label: "My Post " },
-        { icon: Bell, href: "/dashboard/user/new", label: "Post A Recepe" },
+        { icon: LayoutCells, href: "/dashboard/user", label: "Overview" },
+        { icon: BookOpen, href: "/dashboard/user/my-recipes", label: "My Recipes " },
+        { icon: CirclePlus, href: "/dashboard/user/add-recipe", label: "Add Recepe" },
         
-        { icon: Envelope, href: "/messages", label: "Messages" },
+        { icon: Heart, href: "/dashboard/user/favorites", label: "My Favorites" },
+        { icon: Receipt, href: "/dashboard/user/purchased-recipes", label: "My Purchased Recipes" },
+        { icon: Person, href: "/dashboard/user/profile", label: "My Profile" },
         
     ]
 
