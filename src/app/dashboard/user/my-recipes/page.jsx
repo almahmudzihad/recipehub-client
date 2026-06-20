@@ -1,135 +1,187 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSession } from "@/lib/auth-client";
+import { toast } from "react-toastify";
 
 export default function MyRecipesPage() {
-const [recipes, setRecipes] = useState([
-{
-_id: "1",
-recipeName: "Chicken Biryani",
-category: "Dinner",
-cuisineType: "Bangladeshi",
-likesCount: 25,
-},
-{
-_id: "2",
-recipeName: "Beef Curry",
-category: "Lunch",
-cuisineType: "Indian",
-likesCount: 18,
-},
-]);
+  const { data: session } = useSession();
+  const user = session?.user;
 
-const handleDelete = (id) => {
-const confirmDelete = confirm(
-"Are you sure you want to delete this recipe?"
-);
+  const [recipes, setRecipes] = useState([]);
+  const [loading, setLoading] = useState(true);
 
+  // modal state
+  const [openModal, setOpenModal] = useState(false);
+  const [selectedId, setSelectedId] = useState(null);
 
-if (!confirmDelete) return;
+  // ---------------- FETCH ----------------
+  useEffect(() => {
+    const fetchRecipes = async () => {
+      try {
+        if (!user?.email) return;
 
-setRecipes(
-  recipes.filter((recipe) => recipe._id !== id)
-);
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_BASE_URL}/recipes?email=${user.email}`
+        );
 
+        const data = await res.json();
+        setRecipes(data);
+      } catch (err) {
+        toast.error("Failed to load recipes");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-};
+    fetchRecipes();
+  }, [user]);
 
-return ( <div className="p-6">
+  // ---------------- DELETE ----------------
+  const confirmDelete = (id) => {
+    setSelectedId(id);
+    setOpenModal(true);
+  };
 
+  const handleDelete = async () => {
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/recipes/${selectedId}`,
+        {
+          method: "DELETE",
+        }
+      );
 
-  <div className="flex justify-between items-center mb-8">
-    <div>
-      <h1 className="text-3xl font-bold">
-        My Recipes
-      </h1>
+      if (res.ok) {
+        setRecipes((prev) =>
+          prev.filter((r) => r._id !== selectedId)
+        );
 
-      <p className="text-gray-500 mt-2">
-        Manage all your recipes here.
-      </p>
-    </div>
+        toast.success("Deleted successfully");
+      }
 
-    <Link
-      href="/dashboard/user/add-recipe"
-      className="px-5 py-3 rounded-xl bg-orange-500 text-white font-medium"
-    >
-      Add Recipe
-    </Link>
-  </div>
+      setOpenModal(false);
+      setSelectedId(null);
+    } catch (err) {
+      toast.error("Delete failed");
+    }
+  };
 
-  {recipes.length === 0 ? (
-    <div className="bg-white dark:bg-slate-900 rounded-2xl border p-10 text-center">
-      <h2 className="text-2xl font-semibold">
-        No Recipes Found
-      </h2>
+  if (loading) return <p className="p-6">Loading...</p>;
 
-      <p className="text-gray-500 mt-3">
-        You haven't added any recipe yet.
-      </p>
-    </div>
-  ) : (
-    <div className="overflow-x-auto bg-white dark:bg-slate-900 rounded-2xl border">
+  return (
+    <div className="p-6">
 
-      <table className="table w-full">
+      {/* HEADER */}
+      <div className="flex justify-between mb-6">
+        <h1 className="text-3xl font-bold">My Recipes</h1>
 
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Recipe Name</th>
-            <th>Category</th>
-            <th>Cuisine</th>
-            <th>Likes</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
+        <Link
+          href="/dashboard/user/add-recipe"
+          className="px-4 py-2 bg-orange-500 text-white rounded-xl"
+        >
+          Add Recipe
+        </Link>
+      </div>
 
-        <tbody>
+      {/* TABLE */}
+      <div className="overflow-x-auto rounded-xl border bg-white dark:bg-slate-900">
 
-          {recipes.map((recipe, index) => (
-            <tr key={recipe._id}>
-              <td>{index + 1}</td>
+        <table className="w-full border-collapse">
 
-              <td>{recipe.recipeName}</td>
+          <thead className="bg-slate-100 dark:bg-slate-800">
+            <tr>
+              <th className="p-4 text-left">#</th>
+              <th className="p-4 text-left">Name</th>
+              <th className="p-4 text-left">Category</th>
+              <th className="p-4 text-left">Cuisine</th>
+              <th className="p-4 text-left">Likes</th>
+              <th className="p-4 text-left">Actions</th>
+            </tr>
+          </thead>
 
-              <td>{recipe.category}</td>
+          <tbody>
 
-              <td>{recipe.cuisineType}</td>
+            {recipes.map((r, i) => (
+              <tr
+                key={r._id}
+                className="border-t hover:bg-slate-50 dark:hover:bg-slate-800 transition"
+              >
 
-              <td>{recipe.likesCount}</td>
+                <td className="p-4">{i + 1}</td>
 
-              <td>
-                <div className="flex gap-2">
+                <td className="p-4 font-medium">{r.title}</td>
+
+                <td className="p-4">{r.category}</td>
+
+                <td className="p-4">{r.cuisine}</td>
+
+                <td className="p-4">❤️ {r.likes || 0}</td>
+
+                <td className="p-4 flex gap-2">
 
                   <Link
-                    href={`/dashboard/user/update-recipe/${recipe._id}`}
-                    className="px-3 py-2 rounded-lg bg-blue-500 text-white text-sm"
+                    href={`/recipes/${r._id}`}
+                    className="px-3 py-1 rounded bg-blue-500 text-white text-sm"
                   >
-                    Update
+                    View
                   </Link>
 
                   <button
-                    onClick={() =>
-                      handleDelete(recipe._id)
-                    }
-                    className="px-3 py-2 rounded-lg bg-red-500 text-white text-sm"
+                    onClick={() => confirmDelete(r._id)}
+                    className="px-3 py-1 rounded bg-red-500 text-white text-sm"
                   >
                     Delete
                   </button>
 
-                </div>
-              </td>
-            </tr>
-          ))}
+                </td>
 
-        </tbody>
+              </tr>
+            ))}
 
-      </table>
+          </tbody>
+
+        </table>
+      </div>
+
+      {/* DELETE MODAL */}
+      {openModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+
+          <div className="bg-white dark:bg-slate-900 p-6 rounded-xl w-[350px]">
+
+            <h2 className="text-xl font-bold mb-3">
+              Delete Recipe?
+            </h2>
+
+            <p className="text-gray-500 mb-5">
+              This action cannot be undone.
+            </p>
+
+            <div className="flex justify-end gap-3">
+
+              <button
+                onClick={() => setOpenModal(false)}
+                className="px-4 py-2 border rounded-lg"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={handleDelete}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg"
+              >
+                Delete
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+      )}
 
     </div>
-  )}
-</div>
-
-
-);
+  );
 }
