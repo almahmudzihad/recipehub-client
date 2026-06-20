@@ -1,78 +1,128 @@
 "use client";
 
 import { useState } from "react";
-
-
 import { Button } from "@heroui/react";
+import { useSession } from "@/lib/auth-client";
+import { toast } from "react-toastify";
 
 export default function RecipeDetailsPage({ recipe }) {
+  const { data: session, status } = useSession();
+  const user = session?.user;
+
   const [likes, setLikes] = useState(recipe?.likes || 0);
-  const [favorites, setFavorites] = useState(
-    recipe?.favorites || 0
-  );
+  const [favorites, setFavorites] = useState(recipe?.favorites || 0);
 
   const [reportText, setReportText] = useState("");
   const [isOpen, setIsOpen] = useState(false);
+  const [loadingFav, setLoadingFav] = useState(false);
+  console.log("recipe details page", recipe);
   
-
   const handleLike = async () => {
-    try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/recipes/${recipe._id}/like`,
-        {
-          method: "PATCH",
-        }
-      );
-
-      if (res.ok) {
-        setLikes((prev) => prev + 1);
-      }
-    } catch (error) {
-      console.log(error);
+   try {
+    if (!recipe?._id) {
+      toast.error("Recipe not loaded");
+      return;
     }
+
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_BASE_URL}/recipes/${recipe._id}/like`,
+      {
+        method: "PATCH",
+      }
+    );
+
+    const data = await res.json();
+
+    if (!res.ok) throw new Error(data.message);
+
+    setLikes((prev) => prev + 1);
+    toast.success("Liked!");
+  } catch (err) {
+    toast.error(err.message);
+  }
   };
 
+  // -----------------------------
+  // FAVORITE (SAFE VERSION)
+  // -----------------------------
   const handleFavorite = async () => {
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/recipes/${recipe._id}/favorite`,
-        {
-          method: "PATCH",
-        }
-      );
-
-      if (res.ok) {
-        setFavorites((prev) => prev + 1);
+      if (!user) {
+        toast.error("Please login first");
+        return;
       }
-    } catch (error) {
-      console.log(error);
-    }
-  };
 
-  const handleReport = async () => {
-    
-    try {
-      await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/recipes/${recipe._id}/report`,
+      setLoadingFav(true);
+
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/favorites`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            reason: reportText,
+            userEmail: user.email,
+            recipeId: recipe._id,
+            addedAt: new Date(),
           }),
         }
       );
 
-      setReportText("");
-      setIsOpen(false);
-      alert("Report submitted");
-    } catch (error) {
-      console.log(error);
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message);
+      }
+
+      setFavorites((prev) => prev + 1);
+      toast.success("Added to favorites!");
+    } catch (err) {
+      toast.error(err.message || "Favorite failed");
+    } finally {
+      setLoadingFav(false);
     }
   };
 
+  // -----------------------------
+  // REPORT
+  // -----------------------------
+  const handleReport = async () => {
+    try {
+    if (!reportText.trim()) {
+      toast.error("Please write a reason");
+      return;
+    }
+
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_BASE_URL}/recipes/${recipe._id}/report`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          reporterEmail: user?.email,
+          reason: reportText,
+        }),
+      }
+    );
+
+    const data = await res.json();
+
+    if (!res.ok) throw new Error(data.message);
+
+    toast.success("Report submitted");
+    setReportText("");
+    setIsOpen(false);
+  } catch (err) {
+    toast.error(err.message);
+  }
+  };
+
+  // -----------------------------
+  // PURCHASE
+  // -----------------------------
   const handlePurchase = async () => {
     try {
       const res = await fetch(
@@ -90,117 +140,71 @@ export default function RecipeDetailsPage({ recipe }) {
 
       const data = await res.json();
 
-      console.log(data);
+      if (!res.ok) throw new Error(data.message);
 
-      alert(
-        "Stripe integration page will be opened next."
-      );
-    } catch (error) {
-      console.log(error);
+      toast.success("Redirecting to payment...");
+    } catch (err) {
+      toast.error("Payment failed");
     }
   };
+
+  // -----------------------------
+  // INGREDIENT SAFE RENDER
+  // -----------------------------
+  const ingredientsList = Array.isArray(recipe.ingredients)
+    ? recipe.ingredients
+    : recipe.ingredients?.split(",") || [];
 
   return (
     <section className="min-h-screen bg-white dark:bg-slate-950 py-12">
       <div className="max-w-7xl mx-auto px-5">
 
+        {/* TOP */}
         <div className="grid lg:grid-cols-2 gap-10">
 
-          {/* Recipe Image */}
-          <div>
-            <img
-              src={recipe.image}
-              alt={recipe.title}
-              className="w-full h-[500px] object-cover rounded-3xl"
-            />
-          </div>
+          <img
+            src={recipe.image}
+            alt={recipe.title}
+            className="w-full h-[500px] object-cover rounded-3xl"
+          />
 
-          {/* Recipe Content */}
           <div>
 
-            <span className="inline-block px-4 py-2 rounded-full bg-orange-100 text-orange-600 text-sm font-medium">
+            <span className="inline-block px-4 py-2 rounded-full bg-orange-100 text-orange-600 text-sm">
               {recipe.cuisine}
             </span>
 
-            <h1 className="text-5xl font-bold mt-4 text-slate-900 dark:text-white">
+            <h1 className="text-5xl font-bold mt-4">
               {recipe.title}
             </h1>
 
-            <p className="mt-4 text-slate-600 dark:text-slate-300">
+            <p className="mt-4 text-gray-600">
               {recipe.description}
             </p>
 
-            <div className="grid grid-cols-2 gap-4 mt-8">
-
-              <div className="bg-slate-100 dark:bg-slate-900 p-4 rounded-xl">
-                <p className="text-sm text-slate-500">
-                  Category
-                </p>
-
-                <h3 className="font-semibold">
-                  {recipe.category}
-                </h3>
-              </div>
-
-              <div className="bg-slate-100 dark:bg-slate-900 p-4 rounded-xl">
-                <p className="text-sm text-slate-500">
-                  Difficulty
-                </p>
-
-                <h3 className="font-semibold">
-                  {recipe.difficulty}
-                </h3>
-              </div>
-
-              <div className="bg-slate-100 dark:bg-slate-900 p-4 rounded-xl">
-                <p className="text-sm text-slate-500">
-                  Cooking Time
-                </p>
-
-                <h3 className="font-semibold">
-                  {recipe.prepTime}
-                </h3>
-              </div>
-
-              
-
+            {/* STATS */}
+            <div className="flex gap-6 mt-6">
+              <span>❤️ {likes}</span>
+              <span>⭐ {favorites}</span>
             </div>
 
-            {/* Stats */}
-            <div className="flex gap-6 mt-8">
+            {/* BUTTONS */}
+            <div className="flex flex-wrap gap-3 mt-6">
 
-              <div className="bg-pink-100 text-pink-600 px-5 py-3 rounded-xl font-semibold">
-                ❤️ {likes} Likes
-              </div>
-
-              <div className="bg-yellow-100 text-yellow-600 px-5 py-3 rounded-xl font-semibold">
-                ⭐ {favorites} Favorites
-              </div>
-
-            </div>
-
-            {/* Buttons */}
-            <div className="flex flex-wrap gap-4 mt-8">
-
-              <Button
-                color="danger"
-                onPress={handleLike}
-              >
-                ❤️ Like
+              <Button color="danger" onPress={handleLike}>
+                Like
               </Button>
 
               <Button
                 color="warning"
                 onPress={handleFavorite}
+                isLoading={loadingFav}
               >
-                ⭐ Favorite
+                Favorite
               </Button>
 
-              <Button
-                color="success"
-                onPress={handlePurchase}
-              >
-                💳 Buy Recipe 
+              <Button color="success" onPress={handlePurchase}>
+                Buy
               </Button>
 
               <Button
@@ -208,78 +212,77 @@ export default function RecipeDetailsPage({ recipe }) {
                 variant="bordered"
                 onPress={() => setIsOpen(true)}
               >
-                🚩 Report
+                Report
               </Button>
 
             </div>
 
           </div>
-
         </div>
 
-        {/* Ingredients */}
-        <div className="mt-16">
-
-          <h2 className="text-3xl font-bold mb-6">
+        {/* INGREDIENTS */}
+        <div className="mt-12">
+          <h2 className="text-2xl font-bold mb-4">
             Ingredients
           </h2>
 
-          <div className="grid md:grid-cols-2 gap-4">
-
-            {recipe.ingredients}
-            
-
-          </div>
+          <ul className="list-disc pl-5">
+            {ingredientsList.map((item, i) => (
+              <li key={i}>{item}</li>
+            ))}
+          </ul>
         </div>
 
-        {/* Instructions */}
-        <div className="mt-16">
-
-          <h2 className="text-3xl font-bold mb-6">
+        {/* INSTRUCTIONS */}
+        <div className="mt-10">
+          <h2 className="text-2xl font-bold mb-4">
             Instructions
           </h2>
 
-          <div className="bg-slate-100 dark:bg-slate-900 p-6 rounded-2xl leading-8">
+          <p className="whitespace-pre-line text-gray-700">
             {recipe.instructions}
-          </div>
-
+          </p>
         </div>
       </div>
 
-      {/* Report Modal */}
+      {/* REPORT MODAL */}
       {isOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-            <div className="bg-white dark:bg-slate-900 p-6 rounded-xl w-full max-w-md">
-              <h2 className="text-xl font-bold mb-4">
-                Report Recipe
-              </h2>
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center">
+          <div className="bg-white dark:bg-slate-900 p-6 rounded-xl w-[400px]">
 
-              <textarea
-                className="w-full border rounded-lg p-3"
-                rows={4}
-                placeholder="Why are you reporting this recipe?"
-                value={reportText}
-                onChange={(e) => setReportText(e.target.value)}
-              />
+            <h2 className="text-xl font-bold mb-3">
+              Report Recipe
+            </h2>
 
-              <div className="flex justify-end gap-3 mt-4">
-                <button
-                  onClick={() => setIsOpen(false)}
-                  className="px-4 py-2 border rounded-lg"
-                >
-                  Cancel
-                </button>
+            <textarea
+              className="w-full border p-3 rounded-lg"
+              rows={4}
+              value={reportText}
+              onChange={(e) => setReportText(e.target.value)}
+              placeholder="Write reason..."
+            />
 
-                <button
-                  onClick={handleReport}
-                  className="px-4 py-2 bg-red-500 text-white rounded-lg"
-                >
-                  Submit Report
-                </button>
-              </div>
+            <div className="flex justify-end gap-3 mt-4">
+
+              <button
+                onClick={() => setIsOpen(false)}
+                className="px-4 py-2 border rounded"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={handleReport}
+                className="px-4 py-2 bg-red-500 text-white rounded"
+              >
+                Submit
+              </button>
+
             </div>
+
           </div>
-        )}
+        </div>
+      )}
     </section>
   );
 }

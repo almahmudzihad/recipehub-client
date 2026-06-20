@@ -2,9 +2,10 @@
 
 import { createRecipe } from "@/lib/action/recipe";
 import { useSession } from "@/lib/auth-client";
-import { Button, toast } from "@heroui/react";
-import { redirect } from "next/navigation";
+import { Button } from "@heroui/react";
+import {  useRouter } from "next/navigation";
 import { useState } from "react";
+import {  toast } from 'react-toastify';
 
 export default function AddRecipePost () {
   const { data: session } = useSession();
@@ -21,6 +22,7 @@ export default function AddRecipePost () {
   });
   const [image, setImage] = useState(null);
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -63,13 +65,15 @@ const handleSubmit = async (e) => {
       userName: session?.user?.name,
       userEmail: session?.user?.email,
       createdAt: new Date(),
+      isFeatured: false,
+      status: "pending", 
+
     };
     const res = await createRecipe(recipeData);
     if (res.insertedId) {
         toast.success("Recipe posted successfully!");
         e.target.reset();
-        
-        redirect("/dashboard/user");
+        router.push("/dashboard/user");
     }
 
 

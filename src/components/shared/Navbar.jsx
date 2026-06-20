@@ -13,7 +13,6 @@ export default function Navbar() {
 
   const { data: session } = useSession();
   const user = session?.user;
-  console.log("user form navbar", user?.role);
 
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
