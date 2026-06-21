@@ -123,30 +123,7 @@ export default function RecipeDetailsPage({ recipe }) {
   // -----------------------------
   // PURCHASE
   // -----------------------------
-  const handlePurchase = async () => {
-    try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/create-payment-intent`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            price: recipe.price,
-          }),
-        }
-      );
-
-      const data = await res.json();
-
-      if (!res.ok) throw new Error(data.message);
-
-      toast.success("Redirecting to payment...");
-    } catch (err) {
-      toast.error("Payment failed");
-    }
-  };
+  
 
   // -----------------------------
   // INGREDIENT SAFE RENDER
@@ -202,11 +179,20 @@ export default function RecipeDetailsPage({ recipe }) {
               >
                 Favorite
               </Button>
+              {/* <form action="/api/checkout_sessions" method="POST">
+                <Button color="success" type="submit" >
+                  Buy  
+                </Button>
+              </form> */}
+              <form action="/api/checkout_sessions" method="POST">
+                <input type="hidden" name="type" value="recipe" />
+                <input type="hidden" name="recipeId" value={recipe._id} />
+                <input type="hidden" name="amount" value='2'/>
 
-              <Button color="success" onPress={handlePurchase}>
-                Buy
-              </Button>
-
+                <Button color="success" type="submit">
+                  Buy Recipe
+                </Button>
+              </form>
               <Button
                 color="danger"
                 variant="bordered"

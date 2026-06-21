@@ -15,6 +15,8 @@ import { FcGoogle } from "react-icons/fc";
 import { useState } from "react";
 import { authClient } from "@/lib/auth-client";
 import { reddit } from "better-auth";
+import { toast } from "react-toastify";
+import { useRouter } from "next/navigation";
 
 // import your auth client
 // import { authClient } from "@/lib/auth-client";
@@ -30,6 +32,7 @@ export default function RegisterPage() {
   });
 
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   const handleChange = (e) => {
     setFormData({
@@ -56,15 +59,16 @@ export default function RegisterPage() {
       });
 
       if (error) {
-        alert(error.message);
+        toast.error(error.message);
         return;
       }
 
-      alert("Account created successfully!");
-      redirect("/");
+      toast.success("Account created successfully!");
+
+      router.push("/");
     } catch (err) {
       console.log(err);
-      alert("Something went wrong");
+      toast.error("Something went wrong");
     } finally {
       setLoading(false);
     }

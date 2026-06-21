@@ -29,7 +29,7 @@ export default function AddRecipePost () {
       [e.target.name]: e.target.value,
     });
   };
-  
+ 
 const handleSubmit = async (e) => {
   e.preventDefault();
 
@@ -49,12 +49,19 @@ const handleSubmit = async (e) => {
     );
 
     const uploadResult = await uploadRes.json();
+    console.log(uploadResult);
+    
+
+      if (!uploadResult.success) {
+        throw new Error(uploadResult.error?.message || "Image upload failed");
+      }
+
 
     const imageUrl = uploadResult.data.url;
 
     const recipeData = {
       title: formData.title,
-      image: imageUrl,
+      image: imageUrl || "",
       ingredients: formData.ingredients,
       instructions: formData.instructions,
       cuisine: formData.cuisine,
@@ -74,6 +81,11 @@ const handleSubmit = async (e) => {
         toast.success("Recipe posted successfully!");
         e.target.reset();
         router.push("/dashboard/user");
+    }else {
+      toast.error(
+        res.message ||
+          "Free users can only add 2 recipes"
+      );
     }
 
 

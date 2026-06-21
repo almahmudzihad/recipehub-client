@@ -5,11 +5,17 @@ export default function RecipeCard({ recipe }) {
   return (
     <div className="bg-white dark:bg-slate-900 rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition duration-300">
       
-      <img
-        src={recipe.image}
-        alt={recipe.title}
-        className="w-full h-60 object-cover"
-      />
+      {recipe?.image ? (
+        <img
+          src={recipe.image}
+          alt={recipe?.title}
+          className="w-full h-60 object-cover"
+        />
+      ) : (
+        <div className="w-full h-60 bg-gray-200 flex items-center justify-center">
+          No Image
+        </div>
+      )}
 
       <div className="p-5">
         <h2 className="text-2xl font-bold text-slate-900 dark:text-white">

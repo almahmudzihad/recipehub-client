@@ -1,115 +1,146 @@
 "use client";
 
 import { useState } from "react";
+import { useSession } from "@/lib/auth-client";
+import { toast } from "react-toastify";
 
 export default function ProfilePage() {
-  const [user, setUser] = useState({
-    name: "Al Mahmud Zihad",
-    email: "zihad@gmail.com",
-    image:
-      "https://i.ibb.co/4pDNDk1/avatar.png",
-  });
+  const { data: session } = useSession();
+  const user = session?.user;
 
-  const [formData, setFormData] = useState(user);
+  const [name, setName] = useState(user?.name || "");
+  const [image, setImage] = useState(user?.image || "");
+  const [loading, setLoading] = useState(false);
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
+  const handleUpdate = async (e) => {
+    e.preventDefault();
 
-  const handleUpdate = async () => {
     try {
-      // এখানে API call যাবে
-      console.log("Updated Data:", formData);
+      setLoading(true);
 
-      alert("Profile updated successfully!");
-      setUser(formData);
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/users/${user.email}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name,
+            image,
+          }),
+        }
+      );
+
+      const data = await res.json();
+
+      if (res.ok) {
+        toast.success("Profile updated successfully");
+      } else {
+        toast.error(data.message);
+      }
     } catch (error) {
       console.log(error);
+      toast.error("Update failed");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="p-6 max-w-3xl mx-auto">
+    <div className="max-w-3xl mx-auto p-6">
 
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">
-          My Profile
-        </h1>
+      <div className="bg-white dark:bg-slate-900 border rounded-3xl p-8 shadow-sm">
 
-        <p className="text-gray-500 mt-2">
-          Update your personal information
-        </p>
-      </div>
+        {/* Profile Header */}
+        <div className="flex flex-col items-center">
 
-      {/* Profile Card */}
-      <div className="bg-white dark:bg-slate-900 border rounded-2xl p-6 shadow-sm">
-
-        {/* Image */}
-        <div className="flex flex-col items-center mb-6">
           <img
-            src={formData.image}
+            src={
+              image ||
+              "https://i.ibb.co/4pDNDk1/avatar.png"
+            }
             alt="Profile"
-            className="w-28 h-28 rounded-full object-cover border-4 border-orange-400"
+            className="w-32 h-32 rounded-full object-cover border-4 border-orange-500"
           />
+
+          <h1 className="text-3xl font-bold mt-4">
+            {user?.name}
+          </h1>
+
+          <p className="text-gray-500">
+            {user?.email}
+          </p>
+
+          {user?.isPremium && (
+            <span className="mt-3 px-4 py-2 rounded-full bg-yellow-100 text-yellow-700 font-medium">
+              ⭐ Premium Member
+            </span>
+          )}
+
         </div>
 
         {/* Form */}
-        <div className="space-y-4">
+        <form
+          onSubmit={handleUpdate}
+          className="mt-10 space-y-5"
+        >
 
-          {/* Name */}
           <div>
-            <label className="text-sm text-gray-500">
-              Name
+            <label className="block mb-2 font-medium">
+              Full Name
             </label>
+
             <input
               type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              className="w-full mt-1 p-3 border rounded-xl dark:bg-slate-800"
+              value={name}
+              onChange={(e) =>
+                setName(e.target.value)
+              }
+              className="w-full px-4 py-3 border rounded-xl"
             />
           </div>
 
-          {/* Email */}
           <div>
-            <label className="text-sm text-gray-500">
-              Email
-            </label>
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              disabled
-              className="w-full mt-1 p-3 border rounded-xl bg-gray-100 dark:bg-slate-800 cursor-not-allowed"
-            />
-          </div>
-
-          {/* Image URL */}
-          <div>
-            <label className="text-sm text-gray-500">
+            <label className="block mb-2 font-medium">
               Profile Image URL
             </label>
+
             <input
               type="text"
-              name="image"
-              value={formData.image}
-              onChange={handleChange}
-              className="w-full mt-1 p-3 border rounded-xl dark:bg-slate-800"
+              value={image}
+              onChange={(e) =>
+                setImage(e.target.value)
+              }
+              className="w-full px-4 py-3 border rounded-xl"
             />
           </div>
 
-          {/* Button */}
+          <div>
+            <label className="block mb-2 font-medium">
+              Email
+            </label>
+
+            <input
+              type="email"
+              value={user?.email || ""}
+              disabled
+              className="w-full px-4 py-3 border rounded-xl bg-gray-100"
+            />
+          </div>
+
           <button
-            onClick={handleUpdate}
-            className="w-full mt-4 bg-orange-500 text-white py-3 rounded-xl font-medium hover:bg-orange-600 transition"
+            type="submit"
+            disabled={loading}
+            className="w-full py-3 rounded-xl bg-orange-500 text-white font-semibold"
           >
-            Save Changes
+            {loading
+              ? "Updating..."
+              : "Save Changes"}
           </button>
-        </div>
+
+        </form>
+
       </div>
     </div>
   );

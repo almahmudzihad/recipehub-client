@@ -1,168 +1,152 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { useSession } from "@/lib/auth-client";
+import Link from "next/link";
 import {
   BookOpen,
   Heart,
   ThumbsUp,
   Crown,
+  ShoppingBag,
 } from "lucide-react";
 
 export default function DashboardOverview() {
-  const stats = {
-    recipes: 12,
-    favorites: 28,
-    likes: 156,
-    isPremium: true,
-  };
+  const { data: session } = useSession();
+  const user = session?.user;
 
-  return (<div className="p-6 space-y-8">
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    if (!user?.email) return;
 
-    {/* Header */}
-    <div>
+    fetch(
+      `${process.env.NEXT_PUBLIC_BASE_URL}/dashboard-stats/${user.email}`
+    )
+      .then((res) => res.json())
+      .then((data) => {
+        setStats(data);
+        setLoading(false);
+      })
+      .catch(console.error);
+  }, [user]);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center py-20">
+        <span className="loading loading-spinner loading-lg"></span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-6 space-y-8">
+
       <h1 className="text-3xl font-bold">
         Dashboard Overview
       </h1>
 
-      <p className="text-gray-500 mt-2">
-        Welcome back! Here's a quick summary
-        of your RecipeHub activity.
-      </p>
-    </div>
+      <div className="grid md:grid-cols-2 xl:grid-cols-5 gap-6">
 
-    {/* Stats Cards */}
-    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border">
+          <div className="flex justify-between">
+            <div>
+              <p>Total Recipes</p>
+              <h2 className="text-4xl font-bold">
+                {stats.totalRecipes}
+              </h2>
+            </div>
 
-      {/* Total Recipes */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-md p-6 border">
-        <div className="flex justify-between items-center">
-          <div>
-            <p className="text-gray-500">
-              Total Recipes
-            </p>
-
-            <h2 className="text-4xl font-bold mt-2">
-              {stats.recipes}
-            </h2>
+            <BookOpen className="text-orange-500" />
           </div>
-
-          <BookOpen
-            size={40}
-            className="text-orange-500"
-          />
         </div>
-      </div>
 
-      {/* Favorites */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-md p-6 border">
-        <div className="flex justify-between items-center">
-          <div>
-            <p className="text-gray-500">
-              Favorites
-            </p>
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border">
+          <div className="flex justify-between">
+            <div>
+              <p>Favorites</p>
+              <h2 className="text-4xl font-bold">
+                {stats.totalFavorites}
+              </h2>
+            </div>
 
-            <h2 className="text-4xl font-bold mt-2">
-              {stats.favorites}
-            </h2>
+            <Heart className="text-pink-500" />
           </div>
-
-          <Heart
-            size={40}
-            className="text-pink-500"
-          />
         </div>
-      </div>
 
-      {/* Likes */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-md p-6 border">
-        <div className="flex justify-between items-center">
-          <div>
-            <p className="text-gray-500">
-              Total Likes
-            </p>
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border">
+          <div className="flex justify-between">
+            <div>
+              <p>Total Likes</p>
+              <h2 className="text-4xl font-bold">
+                {stats.totalLikes}
+              </h2>
+            </div>
 
-            <h2 className="text-4xl font-bold mt-2">
-              {stats.likes}
-            </h2>
+            <ThumbsUp className="text-blue-500" />
           </div>
-
-          <ThumbsUp
-            size={40}
-            className="text-blue-500"
-          />
         </div>
-      </div>
 
-      {/* Membership */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-md p-6 border">
-        <div className="flex justify-between items-center">
-          <div>
-            <p className="text-gray-500">
-              Membership
-            </p>
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border">
+          <div className="flex justify-between">
+            <div>
+              <p>Purchased</p>
+              <h2 className="text-4xl font-bold">
+                {stats?.totalPurchased}
+              </h2>
+            </div>
 
-            <h2 className="text-xl font-bold mt-3 text-green-600">
-              {stats.isPremium
-                ? "Premium"
-                : "Free"}
-            </h2>
+            <ShoppingBag className="text-green-500" />
           </div>
-
-          <Crown
-            size={40}
-            className="text-yellow-500"
-          />
         </div>
-      </div>
 
-    </div>
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border">
+          <div className="flex justify-between">
+            <div>
+              <p>Membership</p>
 
-    {/* Quick Actions */}
-    <div className="bg-white dark:bg-slate-900 rounded-2xl border p-6">
+              <h2 className="text-xl font-bold mt-2">
+                {stats.isPremium
+                  ? "Premium"
+                  : "Free"}
+              </h2>
+            </div>
 
-      <h2 className="text-xl font-bold mb-4">
-        Quick Actions
-      </h2>
-
-      <div className="flex flex-wrap gap-4">
-
-        <button className="px-5 py-3 rounded-xl bg-orange-500 text-white font-medium">
-          Add Recipe
-        </button>
-
-        <button className="px-5 py-3 rounded-xl bg-pink-500 text-white font-medium">
-          View Favorites
-        </button>
-
-        <button className="px-5 py-3 rounded-xl bg-blue-500 text-white font-medium">
-          My Recipes
-        </button>
+            <Crown className="text-yellow-500" />
+          </div>
+        </div>
 
       </div>
 
+      {!stats.isPremium && (
+        <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white p-8 rounded-3xl">
+          <h2 className="text-3xl font-bold">
+            Upgrade to Premium 🚀
+          </h2>
+
+          <p className="mt-3">
+            Unlock unlimited recipe posting and
+            premium badge.
+          </p>
+          {/* <form action="/api/checkout_sessions" method="POST">
+              <section>
+                <button type="submit" role="link" className="inline-block mt-5 bg-white text-orange-600 px-5 py-3 rounded-xl font-semibold">
+                  Upgrade Now
+                </button>
+              </section>
+            </form> */}
+            <form action="/api/checkout_sessions" method="POST">
+              <input type="hidden" name="type" value="membership" />
+              <input type="hidden" name="amount" value="10" />
+
+              <button color="warning" type="submit" className="inline-block mt-5 bg-white text-orange-600 px-5 py-3 rounded-xl font-semibold">
+                Upgrade Now
+              </button>
+            </form>
+          
+        </div>
+      )}
     </div>
-
-    {/* Membership Banner */}
-    <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-2xl p-8">
-
-      <h2 className="text-2xl font-bold">
-        Upgrade to Premium 🚀
-      </h2>
-
-      <p className="mt-3 max-w-2xl">
-        Premium members can add unlimited
-        recipes, get a premium badge and enjoy
-        exclusive features.
-      </p>
-
-      <button className="mt-5 bg-white text-orange-600 font-semibold px-5 py-3 rounded-xl">
-        Upgrade Now
-      </button>
-
-    </div>
-
-  </div>
-
-
   );
 }

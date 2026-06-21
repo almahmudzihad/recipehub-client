@@ -1,127 +1,150 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useState } from "react";
+import { useSession } from "@/lib/auth-client";
+import { toast } from "react-toastify";
 
 export default function MyFavoritesPage() {
-const [favorites, setFavorites] = useState([
-{
-_id: "1",
-recipeName: "Chicken Biryani",
-category: "Dinner",
-cuisineType: "Bangladeshi",
-likesCount: 25,
-image:
-"https://images.unsplash.com/photo-1563379091339-03246963d29c",
-},
-{
-_id: "2",
-recipeName: "Beef Curry",
-category: "Lunch",
-cuisineType: "Indian",
-likesCount: 18,
-image:
-"https://images.unsplash.com/photo-1544025162-d76694265947",
-},
-]);
+  const { data: session } = useSession();
+  const user = session?.user;
 
-const handleRemove = (id) => {
-const confirmRemove = confirm(
-"Remove this recipe from favorites?"
-);
+  const [favorites, setFavorites] = useState([]);
+  const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    const loadFavorites = async () => {
+      try {
+        if (!user?.email) return;
 
-if (!confirmRemove) return;
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_BASE_URL}/favorites/${user.email}`
+        );
 
-setFavorites(
-  favorites.filter((item) => item._id !== id)
-);
+        const data = await res.json();
 
+        setFavorites(data);
+      } catch (error) {
+        console.log(error);
+        toast.error("Failed to load favorites");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-};
+    loadFavorites();
+  }, [user]);
 
-return ( <div className="p-6">
+  const handleRemove = async (recipeId) => {
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/favorites/${recipeId}/${user.email}`,
+        {
+          method: "DELETE",
+        }
+      );
 
+      if (res.ok) {
+        setFavorites((prev) =>
+          prev.filter((item) => item._id !== recipeId)
+        );
 
-  <div className="mb-8">
-    <h1 className="text-3xl font-bold">
-      My Favorites
-    </h1>
+        toast.success("Removed from favorites");
+      }
+    } catch (error) {
+      toast.error("Remove failed");
+    }
+  };
 
-    <p className="text-gray-500 mt-2">
-      All your favorite recipes in one place.
-    </p>
-  </div>
+  if (loading) {
+    return (
+      <div className="p-6">
+        Loading...
+      </div>
+    );
+  }
 
-  {favorites.length === 0 ? (
-    <div className="bg-white dark:bg-slate-900 border rounded-2xl p-10 text-center">
-      <h2 className="text-2xl font-semibold">
-        No Favorite Recipes
-      </h2>
+  return (
+    <div className="p-6">
 
-      <p className="text-gray-500 mt-3">
-        Start adding recipes to your favorites.
-      </p>
-    </div>
-  ) : (
-    <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold">
+          My Favorites
+        </h1>
 
-      {favorites.map((recipe) => (
-        <div
-          key={recipe._id}
-          className="bg-white dark:bg-slate-900 border rounded-2xl overflow-hidden shadow-sm"
-        >
+        <p className="text-gray-500 mt-2">
+          Your saved favorite recipes.
+        </p>
+      </div>
 
-          <img
-            src={recipe.image}
-            alt={recipe.recipeName}
-            className="w-full h-52 object-cover"
-          />
+      {favorites.length === 0 ? (
+        <div className="bg-white dark:bg-slate-900 border rounded-2xl p-10 text-center">
 
-          <div className="p-5">
+          <h2 className="text-2xl font-semibold">
+            No Favorites Yet
+          </h2>
 
-            <h2 className="text-xl font-bold">
-              {recipe.recipeName}
-            </h2>
-
-            <p className="text-gray-500 mt-2">
-              {recipe.category} •{" "}
-              {recipe.cuisineType}
-            </p>
-
-            <p className="mt-3">
-              ❤️ {recipe.likesCount} Likes
-            </p>
-
-            <div className="flex gap-3 mt-5">
-
-              <Link
-                href={`/recipes/${recipe._id}`}
-                className="flex-1 text-center px-4 py-2 rounded-xl bg-orange-500 text-white"
-              >
-                View Details
-              </Link>
-
-              <button
-                onClick={() =>
-                  handleRemove(recipe._id)
-                }
-                className="px-4 py-2 rounded-xl bg-red-500 text-white"
-              >
-                Remove
-              </button>
-
-            </div>
-
-          </div>
+          <p className="text-gray-500 mt-3">
+            Add recipes to favorites to see them here.
+          </p>
 
         </div>
-      ))}
+      ) : (
+        <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
 
+          {favorites.map((recipe) => (
+            <div
+              key={recipe._id}
+              className="bg-white dark:bg-slate-900 border rounded-2xl overflow-hidden shadow-sm"
+            >
+
+              <img
+                src={recipe.image}
+                alt={recipe.title}
+                className="w-full h-52 object-cover"
+              />
+
+              <div className="p-5">
+
+                <h2 className="text-xl font-bold">
+                  {recipe.title}
+                </h2>
+
+                <p className="text-gray-500 mt-2">
+                  {recipe.category}
+                </p>
+
+                <p className="text-gray-500">
+                  {recipe.cuisine}
+                </p>
+
+                <div className="flex gap-2 mt-5">
+
+                  <Link
+                    href={`/recipes/${recipe._id}`}
+                    className="flex-1 text-center px-4 py-2 rounded-xl bg-orange-500 text-white"
+                  >
+                    View Details
+                  </Link>
+
+                  <button
+                    onClick={() =>
+                      handleRemove(recipe._id)
+                    }
+                    className="px-4 py-2 rounded-xl bg-red-500 text-white"
+                  >
+                    Remove
+                  </button>
+
+                </div>
+
+              </div>
+
+            </div>
+          ))}
+
+        </div>
+      )}
     </div>
-  )}
-</div>
-
-
-);
+  );
 }

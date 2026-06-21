@@ -46,3 +46,28 @@ export const fetchRecipeDetails = async (id) => {
         return { success: false, error: "Network or server configuration error." };
     }
 };
+
+
+// app/actions/premium.js
+
+
+export async function updatePremiumStatus(email) {
+  try {
+    if (!email) return { success: false, message: "Email missing" };
+
+    console.log(email);
+    const res = await fetch(`${baseUrl}/users/premium`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, isPremium: true }),
+    });
+
+    const data = await res.json();
+    return { success: true, data };
+  } catch (error) {
+    console.error("Action error:", error);
+    return { success: false, error: error.message };
+  }
+}

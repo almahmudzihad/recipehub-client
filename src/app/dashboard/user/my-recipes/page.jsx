@@ -12,9 +12,13 @@ export default function MyRecipesPage() {
   const [recipes, setRecipes] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // modal state
-  const [openModal, setOpenModal] = useState(false);
-  const [selectedId, setSelectedId] = useState(null);
+  // DELETE modal
+  const [openDelete, setOpenDelete] = useState(false);
+  const [deleteId, setDeleteId] = useState(null);
+
+  // EDIT modal
+  const [openEdit, setOpenEdit] = useState(false);
+  const [editData, setEditData] = useState(null);
 
   // ---------------- FETCH ----------------
   useEffect(() => {
@@ -39,32 +43,53 @@ export default function MyRecipesPage() {
   }, [user]);
 
   // ---------------- DELETE ----------------
-  const confirmDelete = (id) => {
-    setSelectedId(id);
-    setOpenModal(true);
-  };
-
   const handleDelete = async () => {
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/recipes/${selectedId}`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}/recipes/${deleteId}`,
+        { method: "DELETE" }
+      );
+
+      if (res.ok) {
+        setRecipes((prev) =>
+          prev.filter((r) => r._id !== deleteId)
+        );
+        toast.success("Deleted successfully");
+      }
+
+      setOpenDelete(false);
+      setDeleteId(null);
+    } catch {
+      toast.error("Delete failed");
+    }
+  };
+
+  // ---------------- EDIT ----------------
+  const handleUpdate = async () => {
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/recipes/${editData._id}`,
         {
-          method: "DELETE",
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(editData),
         }
       );
 
       if (res.ok) {
         setRecipes((prev) =>
-          prev.filter((r) => r._id !== selectedId)
+          prev.map((r) =>
+            r._id === editData._id ? editData : r
+          )
         );
 
-        toast.success("Deleted successfully");
+        toast.success("Updated successfully");
+        setOpenEdit(false);
       }
-
-      setOpenModal(false);
-      setSelectedId(null);
-    } catch (err) {
-      toast.error("Delete failed");
+    } catch {
+      toast.error("Update failed");
     }
   };
 
@@ -88,7 +113,7 @@ export default function MyRecipesPage() {
       {/* TABLE */}
       <div className="overflow-x-auto rounded-xl border bg-white dark:bg-slate-900">
 
-        <table className="w-full border-collapse">
+        <table className="w-full">
 
           <thead className="bg-slate-100 dark:bg-slate-800">
             <tr>
@@ -102,35 +127,43 @@ export default function MyRecipesPage() {
           </thead>
 
           <tbody>
-
             {recipes.map((r, i) => (
-              <tr
-                key={r._id}
-                className="border-t hover:bg-slate-50 dark:hover:bg-slate-800 transition"
-              >
+              <tr key={r._id} className="border-t">
 
                 <td className="p-4">{i + 1}</td>
-
-                <td className="p-4 font-medium">{r.title}</td>
-
+                <td className="p-4">{r.title}</td>
                 <td className="p-4">{r.category}</td>
-
                 <td className="p-4">{r.cuisine}</td>
-
-                <td className="p-4">❤️ {r.likes || 0}</td>
+                <td className="p-4">❤️ {r.likes}</td>
 
                 <td className="p-4 flex gap-2">
 
+                  {/* VIEW */}
                   <Link
                     href={`/recipes/${r._id}`}
-                    className="px-3 py-1 rounded bg-blue-500 text-white text-sm"
+                    className="px-3 py-1 bg-blue-500 text-white rounded"
                   >
                     View
                   </Link>
 
+                  {/* EDIT */}
                   <button
-                    onClick={() => confirmDelete(r._id)}
-                    className="px-3 py-1 rounded bg-red-500 text-white text-sm"
+                    onClick={() => {
+                      setEditData(r);
+                      setOpenEdit(true);
+                    }}
+                    className="px-3 py-1 bg-green-500 text-white rounded"
+                  >
+                    Edit
+                  </button>
+
+                  {/* DELETE */}
+                  <button
+                    onClick={() => {
+                      setDeleteId(r._id);
+                      setOpenDelete(true);
+                    }}
+                    className="px-3 py-1 bg-red-500 text-white rounded"
                   >
                     Delete
                   </button>
@@ -139,46 +172,101 @@ export default function MyRecipesPage() {
 
               </tr>
             ))}
-
           </tbody>
 
         </table>
       </div>
 
-      {/* DELETE MODAL */}
-      {openModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-
-          <div className="bg-white dark:bg-slate-900 p-6 rounded-xl w-[350px]">
+      {/* ---------------- DELETE MODAL ---------------- */}
+      {openDelete && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-xl w-[350px]">
 
             <h2 className="text-xl font-bold mb-3">
               Delete Recipe?
             </h2>
 
-            <p className="text-gray-500 mb-5">
-              This action cannot be undone.
-            </p>
-
             <div className="flex justify-end gap-3">
-
               <button
-                onClick={() => setOpenModal(false)}
-                className="px-4 py-2 border rounded-lg"
+                onClick={() => setOpenDelete(false)}
+                className="px-4 py-2 border"
               >
                 Cancel
               </button>
 
               <button
                 onClick={handleDelete}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg"
+                className="px-4 py-2 bg-red-600 text-white"
               >
                 Delete
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* ---------------- EDIT MODAL ---------------- */}
+      {openEdit && editData && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-xl w-[400px] space-y-3">
+
+            <h2 className="text-xl font-bold">
+              Edit Recipe
+            </h2>
+
+            <input
+              className="w-full border p-2 rounded"
+              value={editData.title}
+              onChange={(e) =>
+                setEditData({
+                  ...editData,
+                  title: e.target.value,
+                })
+              }
+            />
+
+            <input
+              className="w-full border p-2 rounded"
+              value={editData.category}
+              onChange={(e) =>
+                setEditData({
+                  ...editData,
+                  category: e.target.value,
+                })
+              }
+            />
+
+            <input
+              className="w-full border p-2 rounded"
+              value={editData.cuisine}
+              onChange={(e) =>
+                setEditData({
+                  ...editData,
+                  cuisine: e.target.value,
+                })
+              }
+            />
+
+            <div className="flex justify-end gap-3 mt-4">
+
+              <button
+                onClick={() => setOpenEdit(false)}
+                className="px-4 py-2 border"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={handleUpdate}
+                className="px-4 py-2 bg-green-600 text-white"
+              >
+                Save
               </button>
 
             </div>
 
           </div>
-
         </div>
       )}
 
