@@ -25,6 +25,12 @@ export default function LoginPage() {
       callbackURL: "/",
     });
   };
+  const handelGoogleSignIn = async () => {
+   await authClient.signIn.social({
+    provider: "google",
+  });
+  };
+  
   const [showPassword, setShowPassword] = useState(false);
 
   return (
@@ -159,6 +165,7 @@ export default function LoginPage() {
 
                 {/* Google Login */}
                 <Button
+                  onClick={handelGoogleSignIn}
                   variant="bordered"
                   size="lg"
                   className="w-full"

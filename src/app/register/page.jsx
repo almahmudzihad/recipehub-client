@@ -74,12 +74,10 @@ export default function RegisterPage() {
     }
   };
 
-  const handleGoogleLogin = async () => {
-    // await authClient.signIn.social({
-    //   provider: "google",
-    //   callbackURL: "/",
-  // });
-  console.log('goole signin')
+  const handelGoogleSignIn = async () => {
+   await authClient.signIn.social({
+    provider: "google",
+  });
   };
 
   return (
@@ -257,11 +255,12 @@ export default function RegisterPage() {
 
                 {/* Google Login */}
                 <Button
+                  onClick={handelGoogleSignIn}
                   type="button"
                   variant="bordered"
                   size="lg"
                   className="w-full"
-                  onPress={handleGoogleLogin}
+                  
                 >
                   <FcGoogle size={22} />
                   Continue with Google

@@ -8,22 +8,25 @@ export default function FeaturedRecipes() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchFeatured = async () => {
-      try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_BASE_URL}/recipes/featured`
-        );
-        const data = await res.json();
-        setRecipes(data);
-      } catch (err) {
-        console.log(err);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchFeatured = async () => {
+    try {
+      setLoading(true);
 
-    fetchFeatured();
-  }, []);
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/recipes/featured`
+      );
+
+      const data = await res.json();
+      setRecipes(data);
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchFeatured();
+}, []);
 
   if (loading) return <p className="p-6">Loading featured recipes...</p>;
 
