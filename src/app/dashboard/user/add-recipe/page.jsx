@@ -4,7 +4,7 @@ import { createRecipe } from "@/lib/action/recipe";
 import { useSession } from "@/lib/auth-client";
 import { Button } from "@heroui/react";
 import {  useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {  toast } from 'react-toastify';
 
 export default function AddRecipePost () {
@@ -22,7 +22,35 @@ export default function AddRecipePost () {
   });
   const [image, setImage] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [recipeCount, setRecipeCount] = useState(0);
+  const [isPremium, setIsPremium] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
+  const [imageUrlInput, setImageUrlInput] = useState("");
   const router = useRouter();
+  const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+  const maxSize = 4 * 1024 * 1024; // 4MB
+  useEffect(() => {
+      const fetchUserInfo = async () => {
+        if (!user?.email) return;
+
+        try {
+          const res = await fetch(
+            `${process.env.NEXT_PUBLIC_BASE_URL}/dashboard-stats/${user.email}`
+          );
+
+          const data = await res.json();
+
+          setRecipeCount(data.totalRecipes);
+          setIsPremium(data.isPremium);
+        } catch (error) {
+          console.log(error);
+        } finally {
+          setPageLoading(false);
+        }
+      };
+
+      fetchUserInfo();
+    }, [user?.email]);
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -30,72 +58,167 @@ export default function AddRecipePost () {
     });
   };
  
-const handleSubmit = async (e) => {
-  e.preventDefault();
+  const handleSubmit = async (e) => {
+      e.preventDefault();
 
-  try {
-    setLoading(true);
+      try {
+        setLoading(true);
 
-    // Upload image to ImgBB
-    const imageData = new FormData();
-    imageData.append("image", image);
+        let imageUrl = "";
 
-    const uploadRes = await fetch(
-      `https://api.imgbb.com/1/upload?key=${process.env.NEXT_PUBLIC_IMGBB_API_KEY}`,
-      {
-        method: "POST",
-        body: imageData,
+        // =========================
+        // 1. Try ImgBB upload first
+        // =========================
+        if (image) {
+          try {
+            const imageData = new FormData();
+            imageData.append("image", image);
+
+            const uploadRes = await fetch(
+              `https://api.imgbb.com/1/upload?key=${process.env.NEXT_PUBLIC_IMGBB_API_KEY}`,
+              {
+                method: "POST",
+                body: imageData,
+              }
+            );
+
+            const uploadResult = await uploadRes.json();
+            console.log("ImgBB response:", uploadResult);
+
+            if (uploadResult?.success) {
+              imageUrl = uploadResult.data.url;
+            } else {
+              console.log("ImgBB failed, fallback to manual URL");
+            }
+          } catch (err) {
+            console.log("ImgBB error:", err);
+          }
+        }
+
+        // =========================
+        // 2. Fallback: manual URL input (if ImgBB fails)
+        // =========================
+        if (!imageUrl) {
+          imageUrl = imageUrlInput; // <-- make sure you added this state
+        }
+
+        // =========================
+        // 3. Final validation
+        // =========================
+        if (!imageUrl) {
+          toast.error("Please upload an image or provide image URL");
+          setLoading(false);
+          return;
+        }
+
+        // =========================
+        // 4. Build recipe object
+        // =========================
+        const recipeData = {
+          title: formData.title,
+          image: imageUrl,
+          ingredients: formData.ingredients,
+          instructions: formData.instructions,
+          cuisine: formData.cuisine,
+          prepTime: Number(formData.prepTime),
+          category: formData.category,
+          difficulty: formData.difficulty,
+          likes: 0,
+          userName: session?.user?.name,
+          userEmail: session?.user?.email,
+          createdAt: new Date(),
+          isFeatured: false,
+          status: "pending",
+        };
+
+        // =========================
+        // 5. Send to backend
+        // =========================
+        const res = await createRecipe(recipeData);
+
+        if (res?.insertedId) {
+          toast.success("Recipe posted successfully!");
+          setFormData({
+            title: "",
+            image: "",
+            ingredients: "",
+            instructions: "",
+            cuisine: "",
+            prepTime: "",
+            category: "",
+            difficulty: "",
+          });
+          setImage(null);
+          setImageUrlInput("");
+          router.push("/dashboard/user");
+        } else {
+          toast.error(res?.message || "Free users can only add 2 recipes");
+        }
+
+      } catch (error) {
+        console.log(error);
+        toast.error("Something went wrong!");
+      } finally {
+        setLoading(false);
       }
-    );
-
-    const uploadResult = await uploadRes.json();
-    console.log(uploadResult);
-    
-
-      if (!uploadResult.success) {
-        throw new Error(uploadResult.error?.message || "Image upload failed");
-      }
-
-
-    const imageUrl = uploadResult.data.url;
-
-    const recipeData = {
-      title: formData.title,
-      image: imageUrl || "",
-      ingredients: formData.ingredients,
-      instructions: formData.instructions,
-      cuisine: formData.cuisine,
-      prepTime: Number(formData.prepTime),
-      category: formData.category,
-      difficulty: formData.difficulty,
-      likes: 0,
-      userName: session?.user?.name,
-      userEmail: session?.user?.email,
-      createdAt: new Date(),
-      isFeatured: false,
-      status: "pending", 
-
     };
-    const res = await createRecipe(recipeData);
-    if (res.insertedId) {
-        toast.success("Recipe posted successfully!");
-        e.target.reset();
-        router.push("/dashboard/user");
-    }else {
-      toast.error(
-        res.message ||
-          "Free users can only add 2 recipes"
+  // Check if the user is a free user and has reached the recipe limit
+    if (pageLoading) {
+      return (
+        <div className="min-h-screen flex items-center justify-center">
+          <h2 className="text-xl font-semibold">
+            Loading...
+          </h2>
+        </div>
       );
     }
 
+    if (!isPremium && recipeCount >= 2) {
+      return (
+        <section className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 px-4">
+          <div className="max-w-xl w-full bg-white dark:bg-slate-900 p-10 rounded-3xl shadow-xl text-center">
 
-  } catch (error) {
-    console.log(error);
-  } finally {
-    setLoading(false);
-  }
-};
+            <h1 className="text-4xl font-bold text-orange-500">
+              Recipe Limit Reached 🚫
+            </h1>
 
+            <p className="mt-5 text-slate-600 dark:text-slate-300">
+              You have already added
+              <span className="font-bold"> {recipeCount} </span>
+              recipes.
+            </p>
+
+            <p className="mt-3 text-slate-500">
+              Free users can only add 2 recipes.
+              Upgrade to Premium Membership to post unlimited recipes.
+            </p>
+
+            <form
+              action="/api/checkout_sessions"
+              method="POST"
+              className="mt-8"
+            >
+              <input
+                type="hidden"
+                name="type"
+                value="membership"
+              />
+
+              <input
+                type="hidden"
+                name="amount"
+                value="10"
+              />
+
+              <Button color="warning">
+                Become Premium 👑
+              </Button>
+            </form>
+
+          </div>
+        </section>
+      );
+    }
   return (
     <section className="min-h-screen bg-white dark:bg-slate-950 py-12">
       <div className="max-w-4xl mx-auto px-5">
@@ -108,6 +231,11 @@ const handleSubmit = async (e) => {
 
             <p className="mt-2 text-slate-500 dark:text-slate-400">
               Share your favorite recipe with the community
+            </p>
+            <p className="mt-2 text-slate-500 dark:text-slate-400">
+              {isPremium
+                ? "Premium User - Unlimited Recipes"
+                : `Recipes Used: ${recipeCount}/2`}
             </p>
           </div>
 
@@ -132,20 +260,58 @@ const handleSubmit = async (e) => {
               />
             </div>
 
-            {/* Image URL */}
-            <div>
-              <label className="block mb-2 font-medium">
-                Recipe Image
-              </label>
+            
+            {/* Image Upload */}
+             <div>
+                <label className="block mb-2 font-medium">
+                  Recipe Image (Upload or Paste URL)
+                </label>
+                <label className="text-sm text-gray-500">
+                  Choose image file (JPG, PNG, WEBP - max 4MB)
+                </label>
 
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => setImage(e.target.files[0])}
-                className="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700"
-                required
-              />
-            </div>
+                <div className="flex gap-4 items-center">
+                  {/* File Upload */}
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    onChange={(e) => {
+                      const file = e.target.files[0];
+
+                      if (!file) return;
+
+                      // ❌ Format check
+                      if (!allowedTypes.includes(file.type)) {
+                        toast.error("Only JPG, PNG, WEBP allowed");
+                        e.target.value = "";
+                        return;
+                      }
+
+                      // ❌ Size check
+                      if (file.size > maxSize) {
+                        toast.error("Image must be less than 4MB");
+                        e.target.value = "";
+                        return;
+                      }
+
+                      setImage(file);
+                    }}
+                    className="w-1/2 px-3 py-2 border rounded-xl"
+                  />
+
+                  {/* OR text */}
+                  <span className="text-sm text-gray-500">OR</span>
+
+                  {/* Manual URL */}
+                  <input
+                    type="text"
+                    placeholder="Paste image URL"
+                    value={imageUrlInput}
+                    onChange={(e) => setImageUrlInput(e.target.value)}
+                    className="w-1/2 px-3 py-2 border rounded-xl"
+                  />
+                </div>
+              </div>
 
             {/* Ingredients */}
             <div>
@@ -210,7 +376,7 @@ const handleSubmit = async (e) => {
               {/* Prep Time */}
               <div>
                 <label className="block mb-2 font-medium">
-                  Preparation Time
+                  Preparation Time (in minutes)
                 </label>
 
                 <input
