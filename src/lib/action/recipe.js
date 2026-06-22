@@ -1,5 +1,10 @@
 "use server";
 
+
+import { headers } from "next/headers";
+import { auth } from "../auth";
+import { redirect } from "next/navigation";
+
 // Fallback to localhost if the env variable isn't picking up on the server side
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 
@@ -71,3 +76,17 @@ export async function updatePremiumStatus(email) {
     return { success: false, error: error.message };
   }
 }
+
+export const getUserSession = async () => {
+    const session = await auth.api.getSession({
+        headers: await headers(),
+    });
+    return session?.user || null;
+};
+
+export const requireRole = async (role) => {
+    const user = await getUserSession();
+    if (user?.role !== role) {
+       return redirect("/unauthorized");
+    }
+};
