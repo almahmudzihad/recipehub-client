@@ -1,5 +1,6 @@
 "use client";
 
+import { authClient } from "@/lib/auth-client";
 import { useEffect, useState } from "react";
 
 export default function TransactionsPage() {
@@ -8,8 +9,15 @@ export default function TransactionsPage() {
 
   useEffect(() => {
     const fetchTransactions = async () => {
+      const {data: token} = await authClient.token();
+      console.log(token);
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/admin/transactions`
+        `${process.env.NEXT_PUBLIC_BASE_URL}/admin/transactions`,
+        {
+          headers: {
+            Authorization: `Bearer ${token.token}`,
+          },
+        }
       );
 
       const data = await res.json();

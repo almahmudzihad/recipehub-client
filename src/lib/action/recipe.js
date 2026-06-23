@@ -43,6 +43,7 @@ export const fetchAllRecipes = async () => {
     }
 };
 export const fetchRecipeDetails = async (id) => {
+    
     try {
         const res = await fetch(`${baseUrl}/api/recipes/${id}`);
         return await res.json();
