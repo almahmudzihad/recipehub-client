@@ -80,8 +80,8 @@ export default function Footer() {
             </h3>
 
             <div className="space-y-3 text-sm">
-              <p>Email: support@recipehub.com</p>
-              <p>Phone: +880 1234-567890</p>
+              <p>Email: amzihad@gmail.ocm</p>
+              <p>Phone: +880 1752533838</p>
               <p>Address: Dhaka, Bangladesh</p>
             </div>
           </div>

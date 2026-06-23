@@ -2,33 +2,44 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { Spinner } from "@heroui/react";
 
 export default function FeaturedRecipes() {
   const [recipes, setRecipes] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-  const fetchFeatured = async () => {
-    try {
-      setLoading(true);
+      const fetchFeatured = async () => {
+        try {
+          setLoading(true);
 
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/recipes/featured`
-      );
+          const res = await fetch(
+            `${process.env.NEXT_PUBLIC_BASE_URL}/recipes/featured`
+          );
 
-      const data = await res.json();
-      setRecipes(data);
-    } catch (err) {
-      console.log(err);
-    } finally {
-      setLoading(false);
-    }
-  };
+          const data = await res.json();
 
-  fetchFeatured();
-}, []);
+          // ✅ safety check (IMPORTANT)
+          if (!res.ok) {
+            setRecipes([]);
+            return;
+          }
 
-  if (loading) return <p className="p-6">Loading featured recipes...</p>;
+          setRecipes(Array.isArray(data) ? data : []);
+        } catch (err) {
+          console.log("FETCH FEATURED ERROR:", err);
+          setRecipes([]); // prevent crash
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchFeatured();
+    }, []);
+
+  
+  if (loading) return <Spinner />;
+    if (recipes.length === 0) return <p>No featured recipes</p>;
 
   return (
     <section className="py-12 px-5">

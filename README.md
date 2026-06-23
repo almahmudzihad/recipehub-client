@@ -1,4 +1,4 @@
-# RecipeHub 🍲
+# RecipeHub — Recipe Sharing Platform 🍲
 
 RecipeHub is a full-stack recipe sharing platform where users can discover, share, favorite, purchase premium recipes, and upgrade to premium membership. The platform includes role-based dashboards, JWT authentication, Stripe payment integration, recipe reporting, favorites management, and featured recipe functionality.
 

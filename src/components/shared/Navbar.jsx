@@ -69,7 +69,7 @@ export default function Navbar() {
 
             {user && (
               <Link
-                href={`${user.role === "user" ? "/dashboard/user" : "/dashboard/admin"}`}
+                href={`${user.role === "admin" ? "/dashboard/admin" : "/dashboard/user"}`}
                 className="hover:text-orange-500 transition"
               >
                 Dashboard
@@ -168,7 +168,7 @@ export default function Navbar() {
             {user ? (
               <>
               <Link
-                href={`${user.role === "user" ? "/dashboard/user" : "/dashboard/admin"}`}
+                href={`${user.role === "admin" ? "/dashboard/admin" : "/dashboard/user"}`}
                 className="hover:text-orange-500 transition"
               >
                 Dashboard
