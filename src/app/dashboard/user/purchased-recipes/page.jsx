@@ -27,6 +27,33 @@ export default function PurchasedRecipes() {
   }, [user]);
 
   if (loading) return <p className="p-6">Loading...</p>;
+  if (!recipes.length) {
+  return (
+    <div className="min-h-[60vh] flex items-center justify-center px-4">
+      <div className="text-center max-w-md">
+
+        <div className="text-7xl mb-4">🛒</div>
+
+        <h2 className="text-3xl font-bold mb-3">
+          No Purchased Recipes Yet
+        </h2>
+
+        <p className="text-slate-500 mb-6">
+          You haven't purchased any recipes yet.
+          Explore our premium recipes and unlock exclusive content.
+        </p>
+
+        <a
+          href="/recipes"
+          className="inline-block bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-xl font-medium transition"
+        >
+          Browse Recipes
+        </a>
+
+      </div>
+    </div>
+  );
+}
 
   return (
     <div className="p-6">
