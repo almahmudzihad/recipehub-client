@@ -1,77 +1,107 @@
 # RecipeHub 🍲
 
-RecipeHub is a full-stack recipe sharing platform where users can discover, share, favorite, and purchase premium recipes. The platform includes role-based dashboards for users and admins, premium membership functionality, Stripe payment integration, recipe reporting, and featured recipes management.
+RecipeHub is a full-stack recipe sharing platform where users can discover, share, favorite, purchase premium recipes, and upgrade to premium membership. The platform includes role-based dashboards, JWT authentication, Stripe payment integration, recipe reporting, favorites management, and featured recipe functionality.
 
-## Live Website
+## 🌐 Live Links
 
-Client: [Add Client URL Here]
+### Client Side
 
-Server: [Add Server URL Here]
+https://recipehub-client-five.vercel.app/
 
-## Admin Credentials
+### Server Side
+
+https://recipehub-server-lake.vercel.app/
+
+---
+
+## 📂 Repository Links
+
+### Client Repository
+
+https://github.com/almahmudzihad/recipehub-client
+
+### Server Repository
+
+https://github.com/almahmudzihad/recipehub-server
+
+---
+
+## 🔑 Admin Credentials
 
 Email: [admin@example.com](mailto:admin@example.com)
 
 Password: Admin123
 
-> Replace with your actual admin credentials before submission.
-
 ---
 
-## Features
+## ✨ Key Features
 
 ### Public Features
 
 * Browse all recipes
 * Search recipes by title
 * Filter recipes by category and cuisine
-* View featured recipes on the homepage
-* View popular recipes based on likes
-* Responsive design for mobile, tablet, and desktop
+* View recipe details
+* Featured Recipes section
+* Popular Recipes section
+* Responsive design for all devices
+
+### Authentication & Security
+
+* Email & Password Authentication
+* Google Authentication
+* JWT Token Based Authorization
+* Protected Routes
+* Role-Based Access Control
+* Unauthorized Access Handling
 
 ### User Features
 
-* User authentication and authorization
-* Create and manage personal recipes
-* Add recipes to favorites
-* Report inappropriate recipes
-* Purchase premium recipes using Stripe
-* Upgrade to Premium Membership
-* View purchased recipes
-* Dashboard statistics
-* Profile management
-
-### Admin Features
-
-* Dashboard overview
-* Manage users
-* Block and unblock users
-* Manage recipes
-* Edit recipes
-* Delete recipes
-* Feature recipes on homepage
-* Manage reported recipes
-* Remove recipes
-* Dismiss reports
-* View transaction history
+* Create Recipes
+* Update Recipes
+* Delete Recipes
+* Add Recipes to Favorites
+* View Favorite Recipes
+* Report Recipes
+* Purchase Premium Recipes
+* Purchase Membership
+* View Purchased Recipes
+* Dashboard Statistics
+* Update Profile Information
 
 ### Premium Features
 
 * Premium users can create unlimited recipes
-* Free users can create up to 2 recipes
-* Premium membership activation after payment
+* Free users can create only 2 recipes
+* Premium Membership activation after successful payment
+* Access premium content
 
-### Payment System
+### Admin Features
+
+* Dashboard Analytics
+* Manage Users
+* Block Users
+* Unblock Users
+* Manage Recipes
+* Delete Recipes
+* Feature Recipes
+* Manage Reports
+* Remove Reported Recipes
+* Dismiss Reports
+* View Transaction History
+
+### Payment Features
 
 * Stripe Checkout Integration
 * Membership Purchase
 * Recipe Purchase
-* Transaction Tracking
-* Payment History
+* Payment Tracking
+* Transaction History
+* Premium Activation
 
 ---
 
-## Technologies Used
+## 🏗️ Technologies Used
 
 ### Frontend
 
@@ -94,14 +124,19 @@ Password: Admin123
 ### Authentication
 
 * Better Auth
+* JWT
 
 ### Payment
 
 * Stripe Checkout
 
+### Image Hosting
+
+* ImgBB
+
 ---
 
-## Database Collections
+## 🗄️ Database Collections
 
 ### Users
 
@@ -151,12 +186,13 @@ Password: Admin123
 
 ---
 
-## Installation
+## 🚀 Installation & Setup
 
 ### Clone Repository
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/almahmudzihad/recipehub-client
+git clone https://github.com/almahmudzihad/recipehub-server
 ```
 
 ### Client Setup
@@ -172,12 +208,12 @@ npm run dev
 ```bash
 cd recipehub-server
 npm install
-nodemon index.js
+npm run dev
 ```
 
 ---
 
-## Environment Variables
+## ⚙️ Environment Variables
 
 ### Client (.env.local)
 
@@ -191,24 +227,37 @@ NEXT_PUBLIC_IMGBB_API_KEY=
 ```env
 PORT=5000
 MONGODB_URI=
+JWT_SECRET=
 STRIPE_SECRET_KEY=
 ```
 
 ---
 
-## Future Improvements
+## 📈 Future Improvements
 
-* Recipe comments and reviews
-* Recipe rating system
-* Recipe recommendation engine
-* Email notifications
+* Recipe Comments
+* Recipe Ratings & Reviews
+* AI Recipe Suggestions
+* Email Notifications
 * Stripe Webhooks
-* AI recipe generation
+* Personalized Recommendations
+* Recipe Collections
+* Social Sharing
 
 ---
 
-## Author
+## 👨‍💻 Developer
 
-Al Mahmud Zihad
+### Al Mahmud Zihad
 
 Full Stack Web Developer
+
+* Frontend Development
+* Backend Development
+* REST API Development
+* Authentication & Authorization
+* Database Design
+* Payment Integration
+* UI/UX Design
+* Testing & Debugging
+* Deployment & Maintenance

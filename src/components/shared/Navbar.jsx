@@ -167,9 +167,12 @@ export default function Navbar() {
 
             {user ? (
               <>
-              <Link href="/dashboard">
-                  Dashboard
-                </Link>
+              <Link
+                href={`${user.role === "user" ? "/dashboard/user" : "/dashboard/admin"}`}
+                className="hover:text-orange-500 transition"
+              >
+                Dashboard
+              </Link>
                 <div className="flex items-center gap-3">
                   <img
                     src={

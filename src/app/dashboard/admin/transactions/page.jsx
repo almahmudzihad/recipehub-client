@@ -10,12 +10,12 @@ export default function TransactionsPage() {
   useEffect(() => {
     const fetchTransactions = async () => {
       const {data: token} = await authClient.token();
-      console.log(token);
+      
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_BASE_URL}/admin/transactions`,
         {
           headers: {
-            Authorization: `Bearer ${token.token}`,
+            authorization: `Bearer ${token.token}`,
           },
         }
       );
