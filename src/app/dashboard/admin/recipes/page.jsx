@@ -75,6 +75,30 @@ export default function AdminRecipesPage() {
       toast.error("Failed to feature recipe");
     }
   };
+  const handleUnfeature = async (id) => {
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_BASE_URL}/admin/recipes/${id}/unfeature`,
+          {
+            method: "PATCH",
+          }
+        );
+
+        if (res.ok) {
+          setRecipes((prev) =>
+            prev.map((r) =>
+              r._id === id
+                ? { ...r, isFeatured: false }
+                : r
+            )
+          );
+
+          toast.success("Recipe removed from featured");
+        }
+      } catch (error) {
+        toast.error("Failed to remove feature");
+      }
+    };
 
   if (loading) return <p className="p-6">Loading...</p>;
 
@@ -161,16 +185,21 @@ export default function AdminRecipesPage() {
                   </Link>
 
                   {/* FEATURE */}
-                  {!r.isFeatured && (
-                    <button
-                      onClick={() =>
-                        handleFeature(r._id)
-                      }
-                      className="px-3 py-1 bg-yellow-500 text-white rounded text-sm"
-                    >
-                      Feature
-                    </button>
-                  )}
+                  {r.isFeatured ? (
+                      <button
+                        onClick={() => handleUnfeature(r._id)}
+                        className="px-3 py-1 bg-gray-500 text-white rounded text-sm"
+                      >
+                        Unfeature
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => handleFeature(r._id)}
+                        className="px-3 py-1 bg-yellow-500 text-white rounded text-sm"
+                      >
+                        Feature
+                      </button>
+                    )}
 
                   {/* DELETE */}
                   <button

@@ -1,4 +1,7 @@
 import FeaturedRecipes from "@/components/homepage/FeaturedRecipes";
+import FoodArticles from "@/components/homepage/FoodArticles";
+import FunFoodFacts from "@/components/homepage/FunFoodFacts";
+import HealthyTips from "@/components/homepage/HealthyTips";
 import Hero from "@/components/homepage/Hero";
 import HowItWorks from "@/components/homepage/HowItWorks";
 import TopChefs from "@/components/homepage/TopChefs";
@@ -10,9 +13,12 @@ export default function Home() {
       <Hero />
       <FeaturedRecipes />
       <TopChefs />
+      <FunFoodFacts />
+      <HealthyTips />
       <HowItWorks />
+      <FoodArticles />
       <WhyChoose />
-      {/* <TopChefs /> */}
+      
     </div>
   );
 }

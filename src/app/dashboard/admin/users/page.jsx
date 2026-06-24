@@ -99,6 +99,7 @@ export default function AdminUsersPage() {
               <th className="p-4 text-left">Name</th>
               <th className="p-4 text-left">Email</th>
               <th className="p-4 text-left">Role</th>
+              <th className="p-4 text-left">Membership</th>
               <th className="p-4 text-left">Status</th>
               <th className="p-4 text-left">Actions</th>
             </tr>
@@ -133,6 +134,17 @@ export default function AdminUsersPage() {
                     </span>
                   )}
                 </td>
+                <td className="p-4">
+                    {user.isPremium ? (
+                      <span className="px-2 py-1 text-xs bg-yellow-200 text-yellow-700 rounded-full">
+                        Premium
+                      </span>
+                    ) : (
+                      <span className="px-2 py-1 text-xs bg-gray-200 text-gray-700 rounded-full">
+                        Free
+                      </span>
+                    )}
+                  </td>
 
                 <td className="p-4">
                   {user.isBlocked ? (

@@ -20,12 +20,34 @@ export default async function MembershipSuccess({ searchParams }) {
   }
 
   const userEmail = session.customer_details?.email;
-  
-  if (userEmail) {
-      const result = await updatePremiumStatus(userEmail);
-      console.log("BACKEND UPDATE RESULT:", result); 
-    }
 
+      if (userEmail) {
+        await updatePremiumStatus(userEmail);
+
+        await fetch(
+          `${process.env.NEXT_PUBLIC_BASE_URL}/payments`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              userEmail,
+              amount: session.amount_total
+                ? session.amount_total / 100
+                : 0,
+              transactionId:
+                typeof session.payment_intent === "string"
+                  ? session.payment_intent
+                  : session.payment_intent?.id,
+              paymentStatus: "paid",
+              paymentType: "membership",
+              paidAt: new Date(),
+            }),
+          }
+        );
+      }
+    
   return (
     <section className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950">
       <div className="bg-white dark:bg-slate-900 p-10 rounded-3xl shadow-xl text-center max-w-xl w-full">
