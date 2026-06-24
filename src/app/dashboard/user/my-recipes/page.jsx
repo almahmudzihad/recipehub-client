@@ -67,16 +67,28 @@ export default function MyRecipesPage() {
   // ---------------- EDIT ----------------
   const handleUpdate = async () => {
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/recipes/${editData._id}`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(editData),
-        }
-      );
+      const updateData = {
+        title: editData.title,
+        category: editData.category,
+        cuisine: editData.cuisine,
+        ingredients: editData.ingredients,
+        instructions: editData.instructions,
+      };
+
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_BASE_URL}/recipes/${editData._id}`,
+          {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(updateData),
+          }
+        );
+
+      const data = await res.json();
+      console.log("Sending:", editData);
+      console.log("Status:", res.status);
 
       if (res.ok) {
         setRecipes((prev) =>
@@ -207,68 +219,153 @@ export default function MyRecipesPage() {
       )}
 
       {/* ---------------- EDIT MODAL ---------------- */}
+      
       {openEdit && editData && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center">
-          <div className="bg-white p-6 rounded-xl w-[400px] space-y-3">
 
-            <h2 className="text-xl font-bold">
-              Edit Recipe
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+  <div className="bg-white dark:bg-slate-900 w-full max-w-2xl rounded-2xl shadow-2xl max-h-[90vh] overflow-y-auto">
+
+
+          {/* Header */}
+          <div className="flex items-center justify-between p-6 border-b">
+            <h2 className="text-2xl font-bold">
+              ✏️ Edit Recipe
             </h2>
 
-            <input
-              className="w-full border p-2 rounded"
-              value={editData.title}
-              onChange={(e) =>
-                setEditData({
-                  ...editData,
-                  title: e.target.value,
-                })
-              }
-            />
+            <button
+              onClick={() => setOpenEdit(false)}
+              className="text-gray-500 hover:text-red-500 text-xl"
+            >
+              ✕
+            </button>
+          </div>
 
-            <input
-              className="w-full border p-2 rounded"
-              value={editData.category}
-              onChange={(e) =>
-                setEditData({
-                  ...editData,
-                  category: e.target.value,
-                })
-              }
-            />
+          {/* Body */}
+          <div className="p-6 space-y-4">
 
-            <input
-              className="w-full border p-2 rounded"
-              value={editData.cuisine}
-              onChange={(e) =>
-                setEditData({
-                  ...editData,
-                  cuisine: e.target.value,
-                })
-              }
-            />
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Recipe Title
+              </label>
 
-            <div className="flex justify-end gap-3 mt-4">
+              <input
+                className="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                value={editData.title}
+                onChange={(e) =>
+                  setEditData({
+                    ...editData,
+                    title: e.target.value,
+                  })
+                }
+              />
+            </div>
+            <div>
+                <label className="block text-sm font-medium mb-2">
+                  Ingredients
+                </label>
 
-              <button
-                onClick={() => setOpenEdit(false)}
-                className="px-4 py-2 border"
+                <textarea
+                  rows={2}
+                  className="w-full border rounded-xl px-4 py-3"
+                  value={editData.ingredients || ""}
+                  onChange={(e) =>
+                    setEditData({
+                      ...editData,
+                      ingredients: e.target.value,
+                    })
+                  }
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Instructions
+                </label>
+
+                <textarea
+                  rows={2}
+                  className="w-full border rounded-xl px-4 py-3"
+                  value={editData.instructions || ""}
+                  onChange={(e) =>
+                    setEditData({
+                      ...editData,
+                      instructions: e.target.value,
+                    })
+                  }
+                />
+              </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Category
+              </label>
+
+              <select
+                className="w-full border rounded-xl px-4 py-3"
+                value={editData.category}
+                onChange={(e) =>
+                  setEditData({
+                    ...editData,
+                    category: e.target.value,
+                  })
+                }
               >
-                Cancel
-              </button>
+                <option>Breakfast</option>
+                <option>Lunch</option>
+                <option>Dinner</option>
+                <option>Dessert</option>
+                <option>Vegan</option>
+              </select>
+            </div>
 
-              <button
-                onClick={handleUpdate}
-                className="px-4 py-2 bg-green-600 text-white"
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Cuisine
+              </label>
+
+              <select
+                className="w-full border rounded-xl px-4 py-3"
+                value={editData.cuisine}
+                onChange={(e) =>
+                  setEditData({
+                    ...editData,
+                    cuisine: e.target.value,
+                  })
+                }
               >
-                Save
-              </button>
-
+                <option>Italian</option>
+                <option>Indian</option>
+                <option>Chinese</option>
+                <option>Mexican</option>
+                <option>Bangladeshi</option>
+              </select>
             </div>
 
           </div>
+
+          {/* Footer */}
+          <div className="flex justify-end gap-3 p-6 border-t">
+
+            <button
+              onClick={() => setOpenEdit(false)}
+              className="px-5 py-2 border rounded-xl hover:bg-gray-100"
+            >
+              Cancel
+            </button>
+
+            <button
+              onClick={handleUpdate}
+              className="px-5 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-xl"
+            >
+              💾 Save Changes
+            </button>
+
+          </div>
+
         </div>
-      )}
+
+
+          </div>
+        )}
 
     </div>
   );
