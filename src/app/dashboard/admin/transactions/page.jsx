@@ -8,9 +8,15 @@ export default function TransactionsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchTransactions = async () => {
-      const {data: token} = await authClient.token();
-      
+  const fetchTransactions = async () => {
+    try {
+      const { data: token } = await authClient.token();
+
+      if (!token?.token) {
+        setTransactions([]);
+        return;
+      }
+
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_BASE_URL}/admin/transactions`,
         {
@@ -20,13 +26,25 @@ export default function TransactionsPage() {
         }
       );
 
-      const data = await res.json();
-      setTransactions(data);
-      setLoading(false);
-    };
+      if (!res.ok) {
+        console.log("STATUS:", res.status);
+        setTransactions([]);
+        return;
+      }
 
-    fetchTransactions();
-  }, []);
+      const data = await res.json();
+
+      setTransactions(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error(error);
+      setTransactions([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchTransactions();
+}, []);
 
   if (loading) return <p className="p-6">Loading...</p>;
 
