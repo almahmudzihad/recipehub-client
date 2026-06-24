@@ -11,10 +11,10 @@ export default function TransactionsPage() {
   const fetchTransactions = async () => {
     try {
       const { data: token } = await authClient.token();
-      onsole.log("TOKEN",token.token);
+      console.log("TOKEN",token.token);
       if (!token?.token) {
         console.log("No token found");
-        c
+        
         setTransactions([]);
         return;
       }
