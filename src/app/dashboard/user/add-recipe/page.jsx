@@ -1,5 +1,6 @@
 "use client";
 
+import LoadingSpinner from "@/components/LoadingSpinner";
 import { createRecipe } from "@/lib/action/recipe";
 import { useSession } from "@/lib/auth-client";
 import { Button } from "@heroui/react";
@@ -164,13 +165,7 @@ export default function AddRecipePost () {
     };
   // Check if the user is a free user and has reached the recipe limit
     if (pageLoading) {
-      return (
-        <div className="min-h-screen flex items-center justify-center">
-          <h2 className="text-xl font-semibold">
-            Loading...
-          </h2>
-        </div>
-      );
+      return <LoadingSpinner />;
     }
 
     if (!isPremium && recipeCount >= 2) {

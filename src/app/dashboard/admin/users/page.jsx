@@ -1,5 +1,6 @@
 "use client";
 
+import LoadingSpinner from "@/components/LoadingSpinner";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
@@ -72,7 +73,7 @@ export default function AdminUsersPage() {
   };
 
   if (loading) {
-    return <p className="p-6">Loading users...</p>;
+    return <LoadingSpinner />;
   }
 
   return (

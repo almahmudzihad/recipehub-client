@@ -7,6 +7,7 @@ import {
   Crown,
   Flag,
 } from "lucide-react";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 export default function AdminOverviewPage() {
   const [stats, setStats] = useState({
@@ -37,7 +38,7 @@ export default function AdminOverviewPage() {
     fetchStats();
   }, []);
 
-  if (loading) return <p className="p-6">Loading...</p>;
+  if (loading) return <LoadingSpinner />;
 
   return (
     <div className="p-6 space-y-8">

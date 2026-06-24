@@ -10,6 +10,7 @@ import {
   Crown,
   ShoppingBag,
 } from "lucide-react";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 export default function DashboardOverview() {
   const { data: session } = useSession();
@@ -33,11 +34,7 @@ export default function DashboardOverview() {
   }, [user]);
 
   if (loading) {
-    return (
-      <div className="flex justify-center py-20">
-        <span className="loading loading-spinner loading-lg"></span>
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   return (

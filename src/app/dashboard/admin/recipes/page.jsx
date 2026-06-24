@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import Link from "next/link";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 export default function AdminRecipesPage() {
   const [recipes, setRecipes] = useState([]);
@@ -100,7 +101,7 @@ export default function AdminRecipesPage() {
       }
     };
 
-  if (loading) return <p className="p-6">Loading...</p>;
+  if (loading) return <LoadingSpinner />;
 
   return (
     <div className="p-6">

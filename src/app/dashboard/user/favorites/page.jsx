@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useSession } from "@/lib/auth-client";
 import { toast } from "react-toastify";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 export default function MyFavoritesPage() {
   const { data: session } = useSession();
@@ -57,11 +58,7 @@ export default function MyFavoritesPage() {
   };
 
   if (loading) {
-    return (
-      <div className="p-6">
-        Loading...
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   return (

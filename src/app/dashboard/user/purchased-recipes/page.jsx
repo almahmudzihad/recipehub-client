@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSession } from "@/lib/auth-client";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 export default function PurchasedRecipes() {
   const { data: session } = useSession();
@@ -26,7 +27,7 @@ export default function PurchasedRecipes() {
     fetchData();
   }, [user]);
 
-  if (loading) return <p className="p-6">Loading...</p>;
+  if (loading) return <LoadingSpinner />;
   if (!recipes.length) {
   return (
     <div className="min-h-[60vh] flex items-center justify-center px-4">

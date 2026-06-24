@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useSession } from "@/lib/auth-client";
 import { toast } from "react-toastify";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 export default function MyRecipesPage() {
   const { data: session } = useSession();
@@ -105,7 +106,7 @@ export default function MyRecipesPage() {
     }
   };
 
-  if (loading) return <p className="p-6">Loading...</p>;
+  if (loading) return <LoadingSpinner />;
 
   return (
     <div className="p-6">

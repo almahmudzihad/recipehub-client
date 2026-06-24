@@ -1,5 +1,6 @@
 "use client";
 
+import LoadingSpinner from "@/components/LoadingSpinner";
 import { authClient } from "@/lib/auth-client";
 import { useEffect, useState } from "react";
 
@@ -46,7 +47,7 @@ export default function TransactionsPage() {
   fetchTransactions();
 }, []);
 
-  if (loading) return <p className="p-6">Loading...</p>;
+  if (loading) return <LoadingSpinner />;
 
   return (
     <div className="p-6">
